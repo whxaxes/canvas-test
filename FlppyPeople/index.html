@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" >
+	<style>
+		/*#cas{margin:auto;display: block;}*/
+		.view{width: 700px;height: 500px;margin:auto;position: relative;}
+		#onceAgain{width: 152px;text-align: center;border:1px solid;background-color: #FFF;position: absolute;left: 270px;top: 190px;display: none;cursor: pointer;padding:20px 0 20px 0;}
+		#points{position: absolute;left: 20px;top: 20px;font-size: 20px;color: #FFF;}
+	</style>
+	<title>FlyppyPeople</title>
+	<script src="easeljs-0.7.1.min.js"></script>
+	<script src="preloadjs-0.4.1.min.js"></script>
+	<script src="person.js"></script>
+	<script src="stone.js"></script>
+</head>
+<body>
+	<div class="view">
+		<canvas id="cas" width="700" height="500">您的浏览器不支持canvas</canvas>
+		<div id="onceAgain"></div>
+		<div id="points">得分：0</div>
+		<div style="position: absolute;bottom:-30px;">按空格进行起跳</div>
+	</div>
+	<div id="showFPS"></div>
+	<script>
+		var fps = document.getElementById("showFPS")
+		var stage , w , h , loader;
+		var man , ground , sky , high;
+		var stones = [] , again = document.getElementById("onceAgain") , pt = document.getElementById("points");
+
+		function init(){
+			stage = new createjs.Stage("cas");
+			w = stage.canvas.width;
+			h = stage.canvas.height;
+
+			var manifest = [
+				{src:"image/man.png" , id:"man"},
+				{src:"image/ground.png" , id:"ground"},
+				{src:"image/bg.png" , id:"bg"},
+			]
+
+			loader = new createjs.LoadQueue(false);
+			loader.addEventListener("complete" , handleComplete);
+			loader.loadManifest(manifest);
+		}
+
+
+		function handleComplete(){
+			var manImage = loader.getResult("man");
+			var groundImage = loader.getResult("ground");
+			var bgImage = loader.getResult("bg")
+			ground = new createjs.Shape();
+			sky = new createjs.Shape();
+			sky.graphics.bf(bgImage).drawRect(0,0,w,h);
+
+			ground.graphics.beginBitmapFill(groundImage).drawRect(0, 0, w+groundImage.width, groundImage.height);
+			ground.tileW = groundImage.width;
+			ground.y = h-groundImage.height;
+			ground.activity = true;
+			ground.action = {
+				run:function(){
+					if(ground.activity){
+						ground.x = ground.x-3;
+						if(ground.x<-groundImage.width){
+							ground.x=0;
+						}
+					}
+				}
+			}
+
+			stage.addChild(sky , ground , high);
+
+			for(var i=0;i<10;i++){
+				stones.push(new stone(w+5 , groundImage));
+			}
+
+			man = new Man(200,326,manImage);
+
+			kuang = new createjs.Shape();
+			kuang.graphics.beginStroke("rgba(255,0,0,0.5)").drawRect(23 , 0 , 50 , 96);
+                //stage.addChild(kuang)
+
+			createjs.Ticker.timingMode = createjs.Ticker.RAF;
+			createjs.Ticker.setFPS(60);
+			createjs.Ticker.addEventListener("tick", tick);
+
+                window.addEventListener("keydown", function(event){
+				event = event||window.event;
+				if(event.keyCode===32&&man.state!=="die"){
+					man.jump();
+				}
+               
+			});
+                
+                 window.addEventListener("touchstart" , function(){
+                	if(man.state!=="die"){
+						man.jump();
+					}
+                })
+
+			again.onclick = function(){
+				for(var i=0;i<stones.length;i++){
+					stones[i].visible = false;
+					stones[i].x = w+5;
+					stones[i].update();
+				}
+
+				man.run();
+				ground.activity = true;
+				stst = false;
+				again.style.display="none";
+
+				point = 0;
+				pt.innerHTML = "得分："+point;
+			}
+		}
+
+		var tt = true,stst=false,point=0,lastStone=null;
+		function tick(event){
+			var deltaS = event.delta/1000;
+			var grantW = man.sprite.getBounds().width*man.scaleX;
+			
+			ground.action.run();
+			man.update();
+
+			if(tt&&!stst){
+				tt = false;
+				for(var i=0;i<stones.length;i++){
+					if(!stones[i].visible){
+						stones[i].visible = true;
+						stones[i].x = w;
+						stones[i].build();
+						break;
+					}
+				}
+
+				setTimeout(function(){
+					tt = true;
+				},2000)
+			}
+
+			for(var i=0;i<stones.length;i++){
+				if(stones[i].visible&&man.state!=="die"){
+					if(!stst) stones[i].update();
+
+					for(var j=0;j<stones[i].bones.length;j++){
+						var sbx = stones[i].bones[j].x+stones[i].getStoneSize().w/2,
+							sby = stones[i].bones[j].y+stones[i].getStoneSize().h/2,
+							manx = man.sprite.x+48,
+							many = man.sprite.y+48;
+
+						if(Math.abs(manx-sbx)<25+stones[i].getStoneSize().w/2 && Math.abs(many-sby)<48+stones[i].getStoneSize().h/2){
+							man.die();
+							ground.activity = false;
+							stst = true;
+							again.style.display="block";
+							again.innerHTML = "你的得分："+point+"<br>再来一遍"
+							break;
+						}else if(Math.abs(manx-sbx)<25+stones[i].getStoneSize().w/2 && lastStone!==stones[i]){
+							point++;
+							pt.innerHTML = "得分："+point;
+							lastStone=stones[i];
+						}
+					}
+				}
+			}
+
+			kuang.x = man.sprite.x;
+			kuang.y = man.sprite.y;
+
+			stage.update(event)
+		}
+
+		init();
+	</script>
+</body>
+</html>

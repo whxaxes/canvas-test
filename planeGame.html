@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<style>
+	    body{
+	    	padding:0;
+	    	margin:0;
+	    	overflow: hidden;
+	    }
+		#cas{
+			display: block;
+			margin:auto;
+		}
+	</style>
+	<title>飞机游戏</title>
+</head>
+<body>
+	<div>
+		<canvas id='cas' width="600" height="900">浏览器不支持canvas</canvas>
+		<div id="fps"></div>
+	</div>
+
+	<script>
+		canvas = document.getElementById("cas");
+		ctx = canvas.getContext('2d');
+		var maxRadius = 2,
+			starSpeed = 1,
+			missleSpeed = 3,
+			badplaneSpeed = 3,
+			planeSpeed = 10;
+		var stars = [] , missles = [] , badPlane = [];
+
+		function drawBg(){
+			ctx.save();
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0,0,canvas.width , canvas.height);
+			ctx.restore();
+			for(var i=0;i<100;i++){
+				var r = Math.random()*maxRadius;
+				var x = Math.random()*canvas.width;
+				var y = Math.random()*2*canvas.height - canvas.height;
+				var star = new Star(x , y , r);
+				stars.push(star);
+				star.paint()
+			}
+		}
+
+		var Star = function(x,y,r){
+			this.x = x;this.y=y;this.r=r;this.speed=starSpeed;
+		}
+		Star.prototype = {
+			paint:function(){
+				ctx.save();
+				ctx.beginPath();
+				ctx.arc(this.x , this.y , this.r , 0 , 2*Math.PI);
+				ctx.fillStyle = "#FFF";
+				ctx.fill();
+				ctx.restore();
+			},
+			move:function(){
+				if(this.y > canvas.height){
+					this.r = Math.random()*maxRadius;
+					this.x = Math.random()*canvas.width;
+					this.y = Math.random()*canvas.height - canvas.height;
+				}
+				this.y += this.speed;
+				this.paint();
+			}
+		}
+
+		var Plane = function(isgood , width , height){
+			this.isgood = isgood;
+			this.isdead = false;
+			this.width = width;
+			this.height = height;
+			if(isgood){
+				this.x = canvas.width/2 - this.width/2;
+				this.y = canvas.height - this.height - 10;
+				this.behavior();
+			}
+		}
+
+		Plane.prototype = {
+			paint:function(){
+				this.isgood ? painter.paintGoodPlane(this) : painter.paintBadPlane(this);
+			},
+			behavior:function(){
+				var that = this;
+				window.addEventListener("keydown" , function(event){
+					switch(event.keyCode){
+						case 37:that.x = that.x <= 0 ? 0 : that.x - planeSpeed;
+								break;
+						case 38:that.y = that.y <=0 ? 0 : that.y - planeSpeed;
+								break;
+						case 39:that.x = that.x+that.width >= canvas.width ? canvas.width-that.width : that.x + planeSpeed;
+								break;
+						case 40:that.y = that.y+that.height >= canvas.height ? canvas.height-that.height : that.y + planeSpeed;
+								break;
+					}
+				})
+			},
+			shot:function(){
+				var missle = new Missle(myPlane.x+myPlane.width/2 , myPlane.y - 10 , 2);
+				var has = false;
+				for(var i=0;i<missles.length;i++){
+					if(missles[i] === null){
+						missles[i] = missle;
+						has = true;
+						break;
+					}
+				}
+				if(!has) missles.push(missle);
+			},
+			badmove:function(){
+				if(this.y>canvas.height+this.height){
+					this.isdead = true;
+				}
+
+				if(!this.isdead){
+					this.y = this.y + badplaneSpeed;
+					this.paint();
+				}
+				else {
+					this.isdead = false;
+					this.x = Math.random()*canvas.width;
+					this.y = -Math.random()*canvas.height;
+				}
+			}
+		}
+
+
+		function createBadPlane(){
+			for(var i=0;i<10;i++){
+				var x = Math.random()*canvas.width;
+				var y = -Math.random()*canvas.height;
+				var plane = new Plane(false , 40 , 40);
+				plane.x = x;
+				plane.y = y;
+				badPlane.push(plane);
+			}
+		}
+
+		var painter = {
+			paintGoodPlane:function(plane){
+				ctx.save();
+				ctx.beginPath();
+				ctx.strokeStyle = "#FFF";
+				ctx.fillStyle = "rgba(76,181,76,1)"
+				ctx.moveTo(plane.x , plane.y);
+				ctx.lineTo(plane.x+plane.width/2 , plane.y - 10);
+				ctx.lineTo(plane.x+plane.width , plane.y);
+				ctx.lineTo(plane.x+plane.width , plane.y+plane.height);
+				ctx.lineTo(plane.x , plane.y+plane.height);
+				ctx.closePath();
+				ctx.fill();
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(plane.x+plane.width , plane.y+plane.height/2);
+				ctx.lineTo(plane.x+plane.width+10 , plane.y+plane.height*3/4);
+				ctx.lineTo(plane.x+plane.width+10 , plane.y+plane.height+2);
+				ctx.lineTo(plane.x+plane.width , plane.y+plane.height-2);
+				ctx.closePath();
+				ctx.fill();
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(plane.x , plane.y+plane.height/2);
+				ctx.lineTo(plane.x-10 , plane.y+plane.height*3/4);
+				ctx.lineTo(plane.x-10 , plane.y+plane.height+2);
+				ctx.lineTo(plane.x , plane.y+plane.height-2);
+				ctx.closePath();
+				ctx.fill();
+				ctx.stroke();
+
+				var fireLength = Math.random()*10+5;
+				ctx.beginPath();
+				ctx.moveTo(plane.x+3 , plane.y+plane.height);
+				ctx.lineTo(plane.x+plane.width/2 , plane.y+plane.height+fireLength);
+				ctx.lineTo(plane.x+plane.width-3 , plane.y+plane.height);
+				ctx.closePath();
+				ctx.fillStyle = "rgba(241,232,91,.8)"
+				ctx.fill();
+
+				ctx.beginPath();
+				ctx.moveTo(plane.x+plane.width/2 , plane.y+plane.height/2);
+				ctx.lineTo(plane.x+plane.width/2 , plane.y+plane.height+4);
+				ctx.stroke();
+				ctx.restore();
+			},
+			paintBadPlane:function(plane){
+				ctx.save();
+				ctx.beginPath();
+				ctx.strokeStyle = "#FFF";
+				ctx.fillStyle = "rgba(100,100,100,1)"
+				ctx.arc(plane.x , plane.y , plane.width/2 , 0 , 2*Math.PI);
+				ctx.fill();
+				ctx.stroke();
+				ctx.moveTo(plane.x , plane.y)
+				ctx.lineTo(plane.x , plane.y+plane.width/2+5);
+				ctx.stroke();
+				ctx.restore();
+			}
+		}
+
+		var Missle = function(x,y,r){this.x = x;this.y = y;this.r = r;this.isdead = false}
+		Missle.prototype={
+			paint:function(){
+				ctx.save();
+				ctx.beginPath();
+				ctx.arc(this.x , this.y , this.r , 0 , 2*Math.PI);
+				ctx.fillStyle = "#f00";
+				ctx.fill();
+				ctx.restore();
+			},
+			move:function(){
+				if(this.y > -this.r && !this.isdead){
+					this.y = this.y - missleSpeed;
+					this.paint();
+				}
+				else {
+					missles[missles.indexOf(this)] = null;
+				}
+			}
+		}
+
+		var missleTime = 0;
+		function initAnimate(){
+			myPlane = new Plane(true , 15 , 40);
+			missleTime = new Date();
+			drawBg();
+			createBadPlane();
+			console.log(badPlane)
+			myPlane.paint();
+			animate();
+		}
+
+		function animate(){
+			var oldmissleTime = new Date();
+			// document.getElementById("fps").innerHTML = "FPS:"+ (parseInt(caculateFps())>60 ? 60 : parseInt(caculateFps()));
+			ctx.clearRect(0,0,canvas.width , canvas.height);
+			ctx.save();
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0,0,canvas.width , canvas.height);
+			ctx.restore();
+
+			if(oldmissleTime - missleTime > 500){
+				missleTime = oldmissleTime;
+				myPlane.shot();
+			}
+
+			missles.forEach(function(){
+				if(this !== window){
+					this.move();
+				}
+			})
+
+			stars.forEach(function(){
+				this.move();
+			});
+
+			badPlane.forEach(function(){
+				this.badmove();
+				var that = this
+				missles.forEach(function(){
+					var l = Math.sqrt(Math.pow(that.y - this.y , 2) + Math.pow(that.x - this.x , 2));
+					if(l < that.width/2+this.r){
+						that.isdead = true;
+						this.isdead = true;
+					}
+				})
+			});
+			myPlane.paint();
+			if("requestAnimationFrame" in window){
+				requestAnimationFrame(animate);
+			}
+			else if("webkitRequestAnimationFrame" in window){
+				webkitRequestAnimationFrame(animate);
+			}
+			else if("msRequestAnimationFrame" in window){
+				msRequestAnimationFrame(animate);
+			}
+			else if("mozRequestAnimationFrame" in window){
+				mozRequestAnimationFrame(animate);
+			}
+		}
+
+		Array.prototype.forEach = function(callback){
+			for(var i=0;i<this.length;i++){
+				callback.call(this[i]);
+			}
+		}
+
+		window.onload = function(){
+			initAnimate()
+		}
+	</script>
+</body>
+</html>
