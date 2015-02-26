@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<style>
+		body{
+	    	padding:0;
+	    	margin:0;
+	    	overflow: hidden;
+	    }
+		#cas{
+			display: block;
+			margin:auto;
+		}
+	</style>
+
+	<script>
+		window.onload = function(){
+			canvas = document.getElementById("cas");
+			context = canvas.getContext('2d');
+			BallRadius = 200;
+			var dotArea = [];
+			for(var j=0;j<=1500;j++){
+				a = Math.random() * 2 *Math.PI;
+				b = Math.random() * 2 *Math.PI;
+				var dot = new Dot(Math.round(Math.sin(b)*Math.cos(a)*BallRadius), Math.round(Math.sin(b)*Math.sin(a)*BallRadius) , Math.round(Math.cos(b)*BallRadius) , 3);
+				dotArea.push({dot:dot , angleX:a , angleY:b});
+				dot.paint();
+			}
+
+			animate();
+
+			function animate(){
+				context.clearRect(0,0,canvas.width,canvas.height);
+				dotArea.forEach(function(){
+					this.angleY = this.angleY + Math.PI/100;
+					this.angleX = this.angleX - Math.PI/100;
+					this.dot.x = Math.sin(this.angleY)*Math.cos(this.angleX)*BallRadius;
+					this.dot.y = Math.sin(this.angleY)*Math.sin(this.angleX)*BallRadius;
+					this.dot.z = Math.cos(this.angleY)*BallRadius;
+				})
+				dotArea.sort(function(a,b){return b.dot.z-a.dot.z})
+				dotArea.forEach(function(){
+					this.dot.paint();
+				})
+				requestAnimationFrame(animate)
+			}
+		}
+
+		Array.prototype.forEach = function(callback){
+			for(var i=0;i<this.length;i++){
+				callback.call(this[i]);
+			}
+		}
+
+		function getRandom(a , b){
+			return Math.random()*(b-a) + a
+		}
+
+		var Dot = function(centerX , centerY , centerZ , radius){
+			this.z = centerZ;
+			this.x = centerX;
+			this.y = centerY;
+			this.radius = radius;
+			this.width = 2*radius;
+		}
+
+		Dot.prototype = {
+			paint:function(){
+				context.save();
+				context.beginPath();
+				var scale =(BallRadius + this.z)/(2*BallRadius);
+				context.arc(canvas.width/2 + this.x , canvas.height/2 + this.y  ,this.radius * scale, 0 , 2*Math.PI);
+				context.fillStyle = "rgba(255,255,255,"+scale+")";
+				context.fill();
+				context.stroke();
+				context.restore();
+			},
+			move:function(x,y){
+				this.x = x;
+				this.y = y;
+				this.paint();
+			}
+		}
+	</script>
+	<title>球</title>
+</head>
+<body style="background-color:#000">
+	<div >
+		<canvas id='cas' width="500" height="500">浏览器不支持canvas</canvas>
+	</div>
+</body>
+</html>

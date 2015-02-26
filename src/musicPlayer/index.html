@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Document</title>
+	<style type="text/css">
+		#cas{
+			position: absolute;
+			left:0;top:0;bottom: 0;right: 0;
+			margin: auto;
+			border: 1px solid;
+			background:#000;
+		}
+	</style>
+</head>
+    <body style="background:#000">
+	<canvas id="cas" width="990" height="540"></canvas>
+	<button id="start">开始</button>
+	<button id="stop">暂停</button>
+	<script type="text/javascript" charset="utf-8">
+		var canvas = document.getElementById("cas"),ctx=canvas.getContext("2d"),musicBuffer = null;
+		window.AudioContext= window.AudioContext||window.webkitAudioContext||window.mozAudioContext;
+		window.RAF =  (function(){
+			return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
+		})();
+		
+		var AC = new AudioContext();
+		
+		loadSound('http://sc.111ttt.com/up/mp3/157360/884D6EB436151C1C5C20D1481EBED8DC.mp3' , function(){
+			decodeBuffer(musicBuffer)
+		})
+		
+		function loadSound(url , callback){
+			ctx.fillStyle = "#FFF";
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.font = "20px 微软雅黑"
+			ctx.fillText("音频下载中，请耐心等待..." , canvas.width/2 , canvas.height/2)
+			
+			var xhr = new XMLHttpRequest();
+			xhr.open('get' , url);
+			xhr.responseType = "arraybuffer"
+			xhr.onload = function(){
+				musicBuffer = xhr.response
+				callback()
+			};
+			xhr.send();
+		}
+		
+		function decodeBuffer(arraybuffer){
+			AC.decodeAudioData(arraybuffer , function(buffer){
+				playMusic(buffer)
+				initAnimation()
+			}, function(e){
+				console.log(e)
+				alert("文件解码失败")
+			})
+		}
+		
+		function changeBuffer(file){
+			var fr = new FileReader();
+			fr.onload = function(e){
+				var fileResult = e.target.result;
+				AC.decodeAudioData(fileResult , function(buffer){
+					playMusic(buffer)
+				}, function(e){
+					console.log(e)
+					alert("文件解码失败")
+				})
+			}
+			fr.readAsArrayBuffer(file);
+		}
+		
+		var analyser;
+		var starttime = 0;
+		var bftime = 0;
+		var isstart = false;
+		var absn,myBuffer;
+		function playMusic(buffer,second){
+			absn = AC.createBufferSource();
+			analyser = AC.createAnalyser();
+			absn.connect(analyser);
+			absn.connect(AC.destination);
+			absn.buffer = buffer;
+            absn.loop = true;
+			isstart = true;
+			myBuffer = buffer;
+			absn.start(0 , second||0);
+			starttime = new Date();
+		}
+		
+		document.getElementById("start").onclick = function(){
+			if(isstart) return;
+			playMusic(myBuffer , bftime)
+		}
+		
+		document.getElementById("stop").onclick = function(){
+			if(!isstart) return;
+			absn.stop()
+			bftime += (new Date()-starttime)/1000;
+			isstart = false;
+		}
+		
+		var tgs = [],tgn = 35,jg = 4,ot = 0,outcanvas = null;
+		var grd=ctx.createLinearGradient(0,110,0,270);
+			grd.addColorStop(0,"red");
+			grd.addColorStop(0.3,"yellow");
+			grd.addColorStop(1,"#00E800");
+		function initAnimation(){
+			outcanvas = document.createElement("canvas");
+			outcanvas.width = canvas.width;
+			outcanvas.height = canvas.height/2;
+			var array = new Uint8Array(analyser.frequencyBinCount);
+			analyser.getByteFrequencyData(array);
+			var w = array.length/tgn-jg;			
+			for(var i=0;i<tgn;i++){
+				tgs.push(new retangle(w , 5 , (i*(array.length/tgn)) , canvas.height/2))
+			}
+			ot = new Date()
+			animate()
+		}
+		
+		function animate(){
+			var array = new Uint8Array(analyser.frequencyBinCount);
+			analyser.getByteFrequencyData(array);
+			ctx.clearRect(0,0,canvas.width,canvas.height);
+			var nt = new Date();
+			for(var i=0;i<tgs.length;i++){
+				tgs[i].update(array[~~(i*array.length/tgn)], (nt-ot)/1000)
+			}
+			copy()
+			ot = nt;
+			RAF(animate)
+		}
+		
+		function copy(){
+			var outctx = outcanvas.getContext("2d");
+			var imgdata = ctx.getImageData(0,0,canvas.width,canvas.height/2);
+			for(var i=0;i<imgdata.data.length;i+=4){
+				imgdata.data[i+3] = 50;
+			}
+			outctx.putImageData(imgdata , 0 , 0)
+			ctx.save()
+			ctx.translate(canvas.width/2,canvas.height/2);
+			ctx.rotate(Math.PI)
+			ctx.scale(-1,1)
+			ctx.drawImage(outcanvas , -canvas.width/2 , -canvas.height/2)
+			ctx.restore()
+		}
+		
+		var retangle = function(w,h,x,y){
+			this.w = w;
+			this.h = h;
+			this.x = x;
+			this.y = y;
+			this.jg = 3;
+			this.power = 0;
+			this.dy = y;
+			this.dv = 100;
+			this.num = 0;
+			this.a = Math.random()*50+100
+			this.b = Math.random()*50+120
+		}
+		
+		retangle.prototype = {
+			update:function(power,times){
+				this.power = power;
+				this.num = ~~(this.power/this.h + 0.5);
+				if(this.power > this.y-(this.dy+this.h)){
+					this.dy = this.y-this.power-this.h-1;
+				}else if(this.dy+this.h>this.y){
+					this.dy = this.y-this.h
+				}else {
+					this.dy += this.dv*times
+				}
+				
+				this.draw();
+			},
+			draw:function(){
+				ctx.fillStyle = grd;
+				var h = (~~(this.power/(this.h+this.jg)))*(this.h+this.jg);
+				ctx.fillRect(this.x , this.y-h, this.w , h)
+				for(var i=0;i<this.num;i++){
+					var y = this.y-i*(this.h+this.jg);
+					ctx.clearRect(this.x-1 , y , this.w+2 , this.jg);
+				}
+				ctx.fillStyle = "#950000"
+				ctx.fillRect(this.x , this.dy , this.w , this.h);
+			}
+		}
+	</script>
+</body>
+</html>

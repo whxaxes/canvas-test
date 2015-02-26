@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=0;">
+	<style>
+		body{margin:0;padding:0;}
+		.view{width: 700px;height:500px;position: relative;}
+		#coins{width:90px;height: 70px;line-height: 70px;position:absolute;left:0px;top:0;padding-left: 60px;background:url(image/coins.png) no-repeat;background-size:30px 30px;background-position:20px 20px;font-size: 34px;color: #FFF;}
+	</style>
+	<title>跑酷游戏</title>
+	<script src="easeljs-0.7.1.min.js"></script>
+	<script src="preloadjs-0.4.1.min.js"></script>
+	<script src="person.js"></script>
+	<script src="otherThings.js"></script>
+</head>
+<body>
+	<div class="view">
+		<canvas id="cas" width="700" height="500">您的浏览器不支持canvas</canvas>
+		<div id="coins">0</div>
+	</div>
+	<div id="showFPS" style="display: none;"></div>
+	<script>
+		var fps = document.getElementById("showFPS"),
+			countCoin = document.getElementById("coins");
+		var stage , C_W , C_H , loader;
+		var man , ground , sky;
+
+		function init(){
+			stage = new createjs.Stage("cas");
+			C_W = stage.canvas.width;
+			C_H = stage.canvas.height;
+
+			var manifest = [
+				{src:"image/man.png" , id:"man"},
+				{src:"image/ground.png" , id:"ground"},
+				{src:"image/bg.png" , id:"bg"},
+				{src:"image/high.jpg" , id:"high"},
+				{src:"image/coins.png" , id:"coin"}
+			]
+
+			loader = new createjs.LoadQueue(false);
+			loader.addEventListener("complete" , handleComplete);
+			loader.loadManifest(manifest);
+
+			drawLoading();
+		}
+
+		function drawLoading(){
+			var ctx = stage.canvas.getContext("2d");
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0,0,C_W,C_H);
+			ctx.fillStyle = "#FFF";
+			ctx.font = "25px 微软雅黑";
+			ctx.fillText("Loading...",C_W/2,C_H/2)
+		}
+
+		//地图数据，mapData为石头数据，coinCode为金币数据
+		var mapData = [
+			"AAAACBBAAACABBAAACAABBBAAAABAAAAAACABCABCABCAAAABBBBBBAAAAACAAAAAAAAAAAABBBBBBAAAAAACACACACACAAAABBBBAAAAACAAAAAAAAAAAABBBBBBAAAAAACACACACACAABBAAAAAAABBA",
+			"AAAAAAAACAABAAAAAAAAAAAAAAABBBBBBCBBBBBBBBAAAAAAAAAAAAAAAAAAAAAAAAACACACACACACACACACACBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBCBCBCBCAAAAAAAAAAAAAAAAAA",
+			"AAAAAAAACAABAAAAAAAAAAAACACACACACACACACABAABABABABABABABACBCBCBCBCBCBCBCBCBCBCBCBCBCBCBCABABACBCBCACACACACACACACACACACACACACACACACACACACACACAAAAAAAAAAAAAAAA"
+		],
+		coinCode = [
+			"--------##########----------------############-#--#---##############-----------------##########-#-#-#-#-#-#-#-##-------################-------------###",
+			"--#--#-------####----------##----###-----####-#--#---####-#-#-#-######------####------#####-#-#-#-#-#-#-#-##-------################---############--###",
+			"-------#--#-------####----------##----##--##############---------######------####------#####-#-#-#-#-#-#-#-##----------################-------------###"
+		]
+
+		function handleComplete(){		//当图片素材load完后执行该方法
+			var manImage = loader.getResult("man"),
+				lowground = loader.getResult("ground"),
+				highground = loader.getResult("high"),
+				bgImage = loader.getResult("bg"),
+				coins = loader.getResult("coin");
+
+			sky = new createjs.Shape();
+			sky.graphics.bf(bgImage).drawRect(0,0,C_W,C_H);
+			sky.setTransform(0, 0, 1 , C_H/bgImage.height);
+			stage.addChild(sky);
+
+			man = createMan(200,326,manImage);
+
+			//该框为判定角色的判定区域
+			kuang = new createjs.Shape();
+			kuang.graphics.beginStroke("rgba(255,0,0,0.5)").drawRect(0 , 0 , man.size().w , man.picsize().h*1.5);
+			// stage.addChild(kuang);
+
+			mapHandle(lowground , highground , coins);
+
+			createjs.Ticker.timingMode = createjs.Ticker.RAF;
+			createjs.Ticker.setFPS(60);
+			createjs.Ticker.addEventListener("tick", tick);
+
+			window.addEventListener("keydown" , function(event){
+				event = event||window.event;
+				if(event.keyCode===32&&man.jumpNum<man.jumpMax){
+					man.jump();
+				}
+			})
+
+			window.addEventListener("touchstart" , function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				if(man.jumpNum<man.jumpMax){
+					man.jump();
+				}
+			})
+		}
+
+
+		var mapIndex = 0,		//地图序列
+			Mix = 0,			//地图数组的索引
+			allStones = [],		//存放所有的石头
+			allCoins = [],		//所有金币
+			lastStone = null;	//存放最后一个石头
+
+		function mapHandle(lowground , highground , coins){		//初始化地图
+			allStones.length = 0;
+			var stoneImage = {"A":lowground , "B":highground},kind = null;
+			for(var i=0;i<30;i++){			//把需要用到的石头预先放入容器中准备好
+				switch(i){
+					case 0:kind="A";break;
+					case 10:kind="B";break;
+					case 20:kind="C";break;
+				}
+				var st = createStone(C_W , kind , stoneImage);
+				allStones.push(st)
+			}
+
+			for(var i=0;i<10;i++){			//把需要用到的金币预先放入容器中
+				var coin = createCoin(coins);
+				allCoins.push(coin);
+			}
+			
+			Mix = Math.floor(Math.random()*mapData.length);			//随机地图序列
+			for(var i=0;i<8;i++){
+				setStone(false)
+			}
+		}
+
+		function setStone(remove){		//添加陆地的石头
+			var arg = mapData[Mix].charAt(mapIndex),
+				coarg = coinCode[Mix].charAt(mapIndex),
+				cc = null;
+
+			if(coarg==="#"){
+				for(var i=0;i<allCoins.length;i++){
+					if(!allCoins[i].shape.visible){
+						cc = allCoins[i];
+						cc.shape.visible = true;
+						break;
+					}
+				}
+			}
+
+			for(var z=0;z<allStones.length;z++){
+				if(!allStones[z].shape.visible&&allStones[z].kind===arg){
+					var st = allStones[z];
+					st.shape.visible = true;
+					st.shape.x = lastStone===null?0:lastStone.shape.x+lastStone.w;
+
+					if(cc){
+						cc.shape.x = lastStone===null?allStones[z].w/2-cc.size().w/2:lastStone.shape.x+lastStone.w+allStones[z].w/2-cc.size().w/2;
+						cc.shape.y = arg==="C"? C_H-loader.getResult("high").height-50 : allStones[z].shape.y-cc.size().h/2-50;
+					}
+
+					lastStone = st;
+					break;
+				}
+			}
+
+			mapIndex++;
+			if(mapIndex>=mapData[Mix].length){
+				Mix = Math.floor(Math.random()*mapData.length)
+				mapIndex=0;
+			}
+		}
+
+		function tick(event){		//舞台逐帧逻辑处理函数
+			man.update();
+
+			kuang.x = man.sprite.x+(man.picsize().w*1.5-man.size().w)/2;	//参考框
+			kuang.y = man.sprite.y;
+
+			man.ground.length=0;
+			var cg = stoneHandle();
+
+			if(man.ground[0]&&!cg) {
+				man.ground.sort(function(a,b){return b.h-a.h});
+				man.endy = man.ground[0].y-man.picsize().h*1.5;
+			}
+
+			allCoins.forEach(function(cc , index){
+				if(cc.shape.visible){
+					if( 
+						Math.abs((kuang.x+man.size().w/2) - (cc.shape.x+cc.size().w/2)) <= (man.size().w+cc.size().w)/2&&
+						Math.abs((kuang.y+man.size().h/2) - (cc.shape.y+cc.size().h/2)) <= (man.size().h+cc.size().h)/2&&
+						!cc.isget
+					){
+						cc.isget = true;
+						countCoin.innerHTML = parseInt(countCoin.innerHTML)+1
+					}
+					cc.update();
+				}
+			})
+
+			document.getElementById("showFPS").innerHTML = man.endy
+			stage.update(event)
+		}
+
+
+		function stoneHandle(){		//石头的逐帧处理  cg为判断当前角色的位置是否被阻挡，overStone是保存离开stage的石头块
+			var cg = false , overStone = null;
+			allStones.forEach(function(s){   //遍历石头，确定玩家落点
+				if(s.shape.visible){
+					s.update();
+
+					if(s.shape.visible&&s.shape.x<=-s.w){
+						overStone = s;
+					}
+
+					var juli = Math.abs((kuang.x+man.size().w/2)-(s.shape.x+s.w/2));
+					if(juli<=(man.size().w+s.w)/2 && man.ground.indexOf(s)===-1){
+						man.ground.push(s);
+
+						if((s.shape.x+s.w/2)>(kuang.x+man.size().w/2)&&s.y<(kuang.y+man.size().h-10)){
+							man.sprite.x = s.shape.x-man.picsize().w-8;
+							cg = true;
+						}
+					}
+				}
+			});
+			if(overStone) {
+				setStone(true);
+				overStone.shape.visible = false;
+			}
+			return cg;
+		}
+
+		init();
+	</script>
+</body>
+</html>

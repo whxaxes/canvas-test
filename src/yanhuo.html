@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<style>
+		body{margin:0;padding:0;}
+	</style>
+	<title>放烟花</title>
+</head>
+<body>
+	<canvas id='cas' style="background-color:#000">浏览器不支持canvas</canvas>
+	<script>
+		var canvas = document.getElementById("cas");
+		var ctx = canvas.getContext("2d");
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		var g = 10 , mcl = 0.1 , RADIUS = 200 , bigbooms = [];
+	
+		
+		window.onload = function(){
+			
+			animate();
+		}
+
+		function animate(){
+			ctx.save();
+			ctx.fillStyle = "rgba(0,0,0,0.1)";
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			ctx.restore();
+
+			bigbooms.foreach(function(index){
+				if(!this.dead){
+					this._move();
+					this._drawLight();
+				}
+				else{
+					this.booms.foreach(function(){
+						if(!this.dead) this.moveTo(index);
+					})
+				}
+			})
+			
+			raf(animate);
+		}
+
+		Array.prototype.foreach = function(callback){
+			for(var i=0;i<this.length;i++){
+				callback.apply(this[i] , [i])
+			}
+		}
+
+		var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) { window.setTimeout(callback, 1000 / 60); };
+ 		
+		canvas.onclick = function(){
+			var x = event.clientX;
+			var y = event.clientY;
+			var bigboom = new Boom(canvas.width/2 ,3,"#FFF" , {x:x , y:y});
+			bigbooms.push(bigboom)
+		}
+
+		var Boom = function(x,r,c,boomArea){
+			this.booms = [];
+			this.x = x;
+			this.y = (canvas.height+r);
+			this.r = r;
+			this.c = c;
+			this.boomArea = boomArea;
+			this.theta = 0;
+			this.dead = false;
+		}
+		Boom.prototype = {
+			_paint:function(){
+				ctx.save();
+				ctx.beginPath();
+				ctx.arc(this.x,this.y,this.r,0,2*Math.PI);
+				ctx.fillStyle = this.c;
+				ctx.fill();
+				ctx.restore();
+			},
+			_move:function(){
+				var dx = this.boomArea.x - this.x , dy = this.boomArea.y - this.y;
+				this.x = Math.abs(dx)<50 ? this.boomArea.x : (this.x+dx*0.01);
+				this.y = Math.abs(dy)<50 ? this.boomArea.y : (this.y+dy*0.01);
+
+				if(dx===0 || dy===0){
+					this._boom();
+					this.dead = true;
+				}
+				else {
+					this._paint();
+				}
+			},
+			_drawLight:function(){
+				ctx.save();
+				ctx.fillStyle = "rgba(255,255,255,0.3)";
+				ctx.beginPath();
+				ctx.arc(this.x , this.y , this.r+5*Math.random()+2 , 0 , 2*Math.PI);
+				ctx.fill();
+				ctx.restore();
+			},
+			_boom:function(){
+				var fragNum = getRandom(100 , 200);
+				for(var i=0;i<fragNum;i++){
+					var color = {
+						a:parseInt(getRandom(128,255)),
+						b:parseInt(getRandom(128,255)),
+						c:parseInt(getRandom(128,255))
+					}
+					var fanwei = 400;
+					var a = getRandom(-Math.PI, Math.PI);
+					var x = getRandom(0, fanwei) * Math.cos(a) + this.x;
+					var y = getRandom(0, fanwei) * Math.sin(a) + this.y; 
+					var radius = getRandom(0 , 2)
+					var frag = new Frag(this.x , this.y , radius , color , x , y );
+					this.booms.push(frag);
+				}
+			}
+		}
+
+		function getRandom(a , b){
+			return Math.random()*(b-a)+a;
+		}
+
+		var focallength = 250;
+		var Frag = function(centerX , centerY , radius , color ,tx , ty , tz){
+			this.tx = tx;
+			this.ty = ty;
+			this.x = centerX;
+			this.y = centerY;
+			this.dead = false;
+			this.centerX = centerX;
+			this.centerY = centerY;
+			this.radius = radius;
+			this.color = color;
+		}
+
+		Frag.prototype = {
+			paint:function(){
+				ctx.save();
+				ctx.beginPath();
+				ctx.arc(this.x , this.y , this.radius , 0 , 2*Math.PI);
+				ctx.fillStyle = "rgba("+this.color.a+","+this.color.b+","+this.color.c+",1)";
+				ctx.fill()
+				ctx.restore();
+			},
+			moveTo:function(index){
+				var dx = this.tx - this.x , dy = this.ty - this.y;
+				this.x = Math.abs(dx)<0.1 ? this.tx : (this.x+dx*0.1);
+				this.y = Math.abs(dy)<0.1 ? this.ty : (this.y+dy*0.1);
+				if(dx===0 && dy===0){
+					this.dead = true;
+				}
+				this.paint();
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+		.view{
+			min-width: 1200px;
+			/*min-width: 450px;*/
+			position: relative;
+		}
+		.start{
+			text-align: center;
+			margin-top: 200px;
+		}
+		.start button{
+			width: 80px;
+		}
+		#result{
+			display: block;
+			line-height: 30px;
+			width: 400px;
+			margin:40px auto;
+			text-align: center;
+		}
+		th{width: 200px;}
+		th:nth-child(1){
+			width: 50px;
+		}
+		th,td{height: 40px;}
+		.beforeSort,.afterSort{
+			width: 300px;
+			height: 400px;
+			position: absolute;
+			left: 20px;
+			border: 1px solid;
+			overflow: auto;
+			word-wrap: break-word;
+			padding:10px;
+			font-size: 14px;
+			line-height: 16px;
+			/*display: none;*/
+		}
+		.afterSort{
+			left: auto;
+			right: 20px;
+		}
+	</style>
+	<title>排序算法</title>
+</head>
+<body>
+	<div class="view">
+		<div class="start">
+			测试数据量：<input type="number" id="maxNum" value="10000">
+			<button>开始计算</button>
+		</div>
+		<div class="beforeSort">排序前：<p></p></div>
+		<div class="afterSort">排序后：<p></p></div>
+		<table id="result" border="1" cellpadding="1" cellspacing="1">
+			<th></th><th>算法</th><th>耗时</th>
+			<tr id="bubble"><td><input type="checkbox" checked=""></td><td>冒泡排序</td><td>等待中...</td></tr>
+			<tr id="insert"><td><input type="checkbox" checked=""></td><td>插入排序</td><td>等待中...</td></tr>
+			<tr id="quick"><td><input type="checkbox" checked=""></td><td>快速排序</td><td>等待中...</td></tr>
+			<tr id="select"><td><input type="checkbox" checked=""></td><td>选择排序</td><td>等待中...</td></tr>
+			<tr id="shell"><td><input type="checkbox" checked=""></td><td>希尔排序</td><td>等待中...</td></tr>
+			<tr id="self"><td><input type="checkbox" checked=""></td><td>数组sort函数排序</td><td>等待中...</td></tr>
+		</table>
+	</div>
+
+	<script>
+		var bs = document.querySelector(".beforeSort p"),
+			as = document.querySelector(".afterSort p"),
+			mn = document.querySelector("#maxNum"),
+			btn = document.querySelector(".start button"),
+			bubble = document.querySelector("#bubble td:nth-child(3)"),
+			insert = document.querySelector("#insert td:nth-child(3)"),
+			quick = document.querySelector("#quick td:nth-child(3)"),
+			select = document.querySelector("#select td:nth-child(3)"),
+			shell = document.querySelector("#shell td:nth-child(3)"),
+			self = document.querySelector("#self td:nth-child(3)"),
+			canclick = true,
+			maxShowNum = 150;
+
+		var allSort = {
+			bubbleSort:function(array){
+				var end = array.length-1;
+				while(end>0){
+					for(var i=0;i<end;i++){
+						if(array[i]>array[i+1]){
+							var md = array[i+1];
+							array[i+1] = array[i];
+							array[i] = md;
+						}
+					}
+					end--;
+				}
+			},
+			insertSort:function(array){
+				for(var i=0;i<array.length;i++){
+					var a = i,b = i+1;
+
+					if(array[a]>array[b]){
+						var j = b-1,ayb = array[b];
+						while(ayb<array[j]){
+							array[j+1] = array[j]
+							j--;
+						}
+						array[j+1] = ayb;
+					}
+				}
+			},
+
+			quickSort:function(array , start , end){
+				//key是分割线
+				var i=start;j = end,key = array[start];
+				while(i<j){
+					while(i<j){
+						if(array[j]<=key&&array[j]<array[i]){	//j->i方向的遍历，如果比key小且比array[i]小，交换数据
+							var md = array[i];
+							array[i] = array[j];
+							array[j] = md;
+							break;
+						}
+						j--;
+					}
+					while(i<j){
+						if(array[i]>=key&&array[i]>array[j]){	//i->j方向的遍历，如果比key大且比array[j]大，交换数据
+							var md = array[i];
+							array[i] = array[j];
+							array[j] = md;
+							break;
+						}
+						i++;
+					}
+				}
+				if(i-start>1){			//对key左边的数据进行递归排序
+					this.quickSort(array , start , i-1)
+				}
+				if(end-i>1){			//对key右边的数据进行递归排序
+					this.quickSort(array , i+1 , end)
+				}
+			},
+
+			selectSort:function(array){
+				var i = 0;	//无序区最小指针
+
+				while(i<array.length){
+					var index = 0 , min = null;  //index为当前遍历到的地址，min存放最小值
+					for(var j=i;j<array.length;j++){
+						if(array[j]<min||min===null){
+							min = array[j];
+							index = j;
+						}
+					}
+
+					if(array[i]!==min){			//提高排序稳定性，如果两个元素值相同则不交换
+						var md = array[i];
+						array[i] = array[index];
+						array[index] = md;
+					}
+					i++;
+				}
+			},
+
+			shellSort:function(array , d){
+				var d = d;
+				while(d>=1){
+					sort(array , d);
+					d = Math.floor(d/2)
+				}
+
+				function sort(array , d){
+					var h = array.length/d;
+					for(var i=0;i<d;i++){
+						for(var j=0;j<h;j++){
+							var a = i+j*d , b=a+d;
+							
+							if(array[a]>array[b]){
+								var g = a,ayb = array[b];
+								while(ayb<array[g]){
+									array[g+d] = array[g]
+									g-=d;
+								}
+								array[g+d] = ayb;
+							}
+						}
+					}
+				}
+			},
+
+			selfSort:function(array){
+				array.sort(function(a , b){
+					return a-b;
+				})
+			}
+		}
+
+		clickHandle();
+
+		btn.onclick = function(){
+			if(!canclick) return false;
+
+			clickHandle()
+		}
+
+		function clickHandle(){
+			canclick = false;
+			bs.innerHTML = "";
+			as.innerHTML = "";
+
+			var maxNum = parseInt(mn.value)||0,
+				array = [];
+
+			bs.innerHTML = "随机数生成中...";
+			for(var i=0;i<maxNum;i++){
+				array.push(parseInt(Math.random()*maxNum));
+			}
+			bs.innerHTML = showArrayText(array)
+			
+			var cacu = [],
+				tr = document.querySelectorAll("#result tr");
+
+			for(var j=0;j<tr.length;j++){
+				if(tr[j].getElementsByTagName("input")[0]&&tr[j].getElementsByTagName("input")[0].checked){
+					window[tr[j].id].innerHTML="等待中..."
+					cacu.push(tr[j])
+				}else {
+					if(window[tr[j].id]) window[tr[j].id].innerHTML="-"
+				}
+			}
+
+			var cindex=0;
+			loop();
+			function loop(){
+				if(cacu.length>0){
+					loopSort(cacu[cindex].id , array , function(){
+						cindex++;
+						if(cindex<cacu.length){
+							loop()
+						}else {
+							canclick = true;
+						}
+					})
+				}
+			}
+
+		}
+
+
+		function loopSort(sort , array , callback){
+			var sortArray = Array.prototype.slice.call(array , 0);
+			window[sort].innerHTML = "计算中...";
+
+			setTimeout(function(){
+				var time1 = new Date();
+				if(sort==="quick"){
+					allSort[sort+"Sort"](sortArray,0,sortArray.length-1);
+				}else if(sort==="shell"){
+					allSort[sort+"Sort"](sortArray,sortArray.length/2);
+				}else{
+					allSort[sort+"Sort"](sortArray);
+				}
+				var time2 = new Date();
+				window[sort].innerHTML = (time2-time1)/1000+" 秒";
+                as.innerHTML += sort+"："+showArrayText(sortArray)+"<br><br>"
+				
+				callback();
+			},100)
+		}
+
+		function showArrayText(array){
+			var t = "[";
+			if(array.length>maxShowNum){
+				t += array.slice(0,maxShowNum/2).join(",")+"......"+array.slice(array.length-maxShowNum/2 , array.length).join(",")
+			}else {
+				t += array.join(",")
+			}
+			t+="]"
+			return t;
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+	    body{
+	    	padding:0;
+	    	margin:0;
+	    	overflow: hidden;
+	    }
+	    #cas{
+	    	display: block;
+	    	margin:40px auto;
+	    	border:1px solid;
+	    }
+	</style>
+	<title>接水管游戏</title>
+</head>
+<body>
+	<canvas id="cas" width="800" height="800">您的浏览器不支持canvas</canvas>
+	<div style="display:none">
+		<img src="start.png" alt="" id="start">
+		<img src="pipes0.jpg" alt="" id="pipe0">
+		<img src="pipe1.png" alt="" id="pipe1">
+		<img src="pipe2.png" alt="" id="pipe2">
+	</div>
+	<script src="data.js"></script>
+	<script>
+		var PipeGame = (function(){
+			var canvas = document.getElementById("cas");
+			var ctx = canvas.getContext('2d');
+			var cols = 8 ,	//拼图列
+				rows = 4 ,	//拼图行
+				jiange = 20 ,  //拼图区与canvas之间的边缘宽度
+				boxWidth = (canvas.width-2*jiange)/cols,	//水管块宽高
+				marginTop = (canvas.height - boxWidth*rows)/2,    //拼图区与顶部高度
+				pipeWidth = 30 ,	//水管宽度
+				canclick = true,	//当前是否可以点击
+				activityBox = null, //用于保存运动中的水管块
+				boxes = [];    //保存水管块的容器
+				toolBoxes = [];     //保存工具对象
+				connectSuccess = false;
+
+			return function(){
+				var Box = function(center , style , Gateway , angle , coordinate){
+					this.center = center;
+					this.style = style;
+					this.angle = angle;
+					this.endangle = angle;
+					this.Gateway = Gateway;
+					this.coordinate = coordinate;
+				}
+				Box.prototype = {
+					constructor:Box,
+					draw:function(){
+						this.setHole();
+
+						if(this.angle!==this.endangle){
+							canclick = false;
+							this.rotate();
+						}
+						
+						var ext = [
+							{x:0,y:-boxWidth/2},
+							{x:boxWidth/2,y:0},
+							{x:0,y:boxWidth/2},
+							{x:-boxWidth/2,y:0},
+						]
+						ctx.save();
+						ctx.translate(this.center.x , this.center.y);
+						ctx.rotate(this.angle);
+						//画管道
+						switch(this.style){
+							case 0:break;
+							case 1:ctx.drawImage(document.getElementById("pipe1") , -boxWidth/2 , -boxWidth/2 , boxWidth , boxWidth);
+							break;
+							case 2:ctx.drawImage(document.getElementById("pipe2") , -boxWidth/2 , -boxWidth/2 , boxWidth , boxWidth);
+							break;
+							case 3:ctx.drawImage(document.getElementById("start") , -boxWidth/2 , -boxWidth/2 , boxWidth , boxWidth);
+							break;
+						}
+						ctx.restore();
+					},
+					rotate:function(){
+						if(Math.abs(this.endangle-this.angle)<=0.01){
+							canclick = true;
+							this.endangle = this.endangle>=2*Math.PI?0:this.endangle;
+							this.angle = this.endangle;
+
+							if(this.style===3){
+								var result = connectPipes();
+								if(result){
+									// alert('成功连通')
+									connectSuccess = true;
+								}
+								else {
+									alert("游戏失败")
+									window.location.reload();
+								}
+							}
+						}
+						else {
+							this.angle += (this.endangle-this.angle)*0.2;
+						}
+					},
+					setHole:function(){
+						if(this.style===1){
+							var zl = this.endangle/(0.5*Math.PI);
+							var initHole1 = 0 , initHole2 = 2;
+							this.inHole = (initHole1+zl)>=4?((initHole1+zl)-4):(initHole1+zl);
+							this.outHole = (initHole2+zl)>=4?((initHole2+zl)-4):(initHole2+zl);
+						}
+						else if(this.style===2){
+							var zl = this.endangle/(0.5*Math.PI);
+							var initHole1 = 1 , initHole2 = 2;
+							this.inHole = (initHole1+zl)>=4?((initHole1+zl)-4):(initHole1+zl);
+							this.outHole = (initHole2+zl)>=4?((initHole2+zl)-4):(initHole2+zl);
+						}
+					}
+				}
+
+				//判断水管连通性
+				function connectPipes(){
+					var index = 0;
+					while(1){
+						var result = getHole(boxes[index]);
+						if(boxes[index+result.nextBox]){
+							if(result.hole===boxes[index+result.nextBox].inHole){
+								index = index+result.nextBox;
+							}
+							else if(result.hole===boxes[index+result.nextBox].outHole){
+								var num = boxes[index+result.nextBox].inHole;
+								boxes[index+result.nextBox].inHole = result.hole;
+								boxes[index+result.nextBox].outHole = num;
+								index = index+result.nextBox;
+							}
+							else {
+								break;
+							}
+						}
+						else {
+							break;
+						}
+					}
+					if(index===boxes.length-1) return true;
+					else return false;
+				}
+
+				function getHole(box){
+					var hole="0";
+					var nextBox=0;
+					switch(box.outHole){
+						case 0 : hole = 2;
+								nextBox = -cols;
+						break;
+						case 1 : hole = 3;
+								if(box.coordinate.cols===cols-1){
+									nextBox = 1000000;
+								}
+								else nextBox = 1;
+						break;
+						case 2 : hole = 0;
+								nextBox = cols;
+						break;
+						case 3 : hole = 1;
+								if(box.coordinate.cols===0){
+									nextBox = 1000000;
+								}
+								else nextBox = -1;
+						break;
+					}
+					return {hole:hole , nextBox:nextBox};
+				}
+
+				//数组扩展循环遍历方法
+				Array.prototype.foreach = function(callback){
+					for(var i=0;i<this.length;i++){
+						callback.apply(this[i] , [i]);
+					}
+				}
+
+				window.addEventListener("click" , function(){
+					if(!canclick) return false;
+					else {
+						canclick = false;
+						var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft - canvas.offsetLeft;
+						var y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop - canvas.offsetTop;
+
+						boxes.foreach(function(){
+							if(x>=(this.center.x-boxWidth/2)&&x<=(this.center.x+boxWidth/2)&&y>=(this.center.y-boxWidth/2)&&y<=(this.center.y+boxWidth/2)&&!this.Gateway){
+								this.endangle = this.endangle + 0.5*Math.PI;
+								activityBox = this;
+							}
+						});
+
+						toolBoxes.foreach(function(){
+							if(this.constructor===Box&&x>=(this.center.x-boxWidth/2)&&x<=(this.center.x+boxWidth/2)&&y>=(this.center.y-boxWidth/2)&&y<=(this.center.y+boxWidth/2)&&this.style===3){
+								this.endangle = this.endangle + 4*Math.PI;
+							}
+						})
+					}
+				},false)
+
+				//获得随机数，如果c不为空则为获取除c之外的随机数
+				function getRandom(a , b , c){
+					if(c!==null){
+						var random = 0;
+						while(1){
+							var num = Math.round(Math.random()*(b-a)+a)
+							if(num !== c){
+								random = num;
+								break;
+							}
+						}
+						return random;
+					}
+					else {
+						return Math.round(Math.random()*(b-a)+a);
+					}
+				}
+
+				var Painter = {
+					drawHaoZe:function(){    //绘制饮水器
+						ctx.save();
+						ctx.fillStyle = "rgba(0,0,0,0.8)";
+						ctx.fillRect(315 , 105+marginTop , 172 , 172);
+						ctx.strokeRect(315 , 105+marginTop , 172 , 172);
+						ctx.fillStyle = "#FFF";
+						ctx.font = "20px 微软雅黑";
+						ctx.textAlign = "center";
+						ctx.textBaseLine = "middle";
+						ctx.fillText("净水器" , canvas.width/2 , canvas.height/2);
+						ctx.restore();
+					},
+					drawBackGround:function(){
+						ctx.save();
+						ctx.fillStyle = "#BB8350";
+						ctx.fillRect(0 , boxes[0].center.y-boxWidth/2-jiange , boxWidth*cols+2*jiange , boxWidth*rows+2*jiange);
+
+						for(var i=0;i<rows;i++){
+							for(var j=0;j<cols;j++){
+								ctx.drawImage(document.getElementById("pipe0") , (j*boxWidth)+jiange , (i*boxWidth)+marginTop , boxWidth , boxWidth);
+							}
+						}
+						
+						ctx.restore;
+					},
+					drawWaterBox:function(){
+						var wb1 = new WaterBox({x:canvas.width/2 , y:jiange+50} , false , canvas.width-(2*jiange) , 100)
+						var wb2 = new WaterBox({x:canvas.width/2 , y:canvas.height-jiange-50} , true , canvas.width-(2*jiange) , 100)
+						toolBoxes.push(wb1);
+						toolBoxes.push(wb2);
+					},
+					drawOutPipe:function(){
+						var t1 = new Box({x:boxes[0].center.x , y:boxes[0].center.y-boxWidth} , 1 , true , 0);
+						var t2 = new Box({x:boxes[0].center.x , y:boxes[0].center.y-boxWidth} , 3 , false , 0);
+						var t3 = new Box({x:boxes[boxes.length-1].center.x , y:boxes[boxes.length-1].center.y+boxWidth} , 1 , true , 0);
+						toolBoxes.push(t1);
+						toolBoxes.push(t2);
+						toolBoxes.push(t3);
+					}
+				}
+
+				var WaterBox = function(center , isgood , width , height){
+					this.center = center;
+					this.isgood = isgood;
+					this.w = width;
+					this.h = height;
+					this.waterHeight = isgood?0:this.h*2/3;
+					this.start = false;
+					this.end = false;
+				}
+				WaterBox.prototype = {
+					constructor:WaterBox,
+					draw:function(){
+						ctx.save();
+						ctx.strokeStyle = "#000";
+						ctx.strokeRect(this.center.x-this.w/2 , this.center.y-this.h/2 , this.w , this.h);
+						ctx.fillStyle = this.isgood?"rgba(52,160,209,1)":"rgba(164,164,164,1)";
+
+						if(this.start) {
+							this.isgood?this.addWater():this.reduceWater();
+							if(this.isgood){
+								var h = this.waterHeight===this.h*2/3?0:this.h
+								ctx.fillRect(this.center.x+(this.w/2-66) , this.center.y-this.h/2 , 37 , h)
+								if(h===0){this.end = true}
+							}
+						}
+
+						ctx.fillRect(this.center.x-this.w/2 , (this.center.y-this.h/2)+(this.h-this.waterHeight) , this.w , this.waterHeight);
+						ctx.restore();
+					},
+					reduceWater:function(){
+						this.waterHeight = this.waterHeight<=0?0:this.waterHeight-0.5;
+					},
+					addWater:function(){
+						this.waterHeight = this.waterHeight>=this.h*2/3?this.h*2/3:this.waterHeight+0.5;
+					}
+				}
+
+				//动画初始化
+				function initAnimation(){
+					for(var i=0;i<rows;i++){
+						for(var j=0;j<cols;j++){
+							var b;
+							//低难度
+							// var b = new Box({x:(j*boxWidth)+boxWidth/2+jiange , y:(i*boxWidth)+boxWidth/2+marginTop} , 0 , true , 0 , {rows:i , cols:j});
+
+							//高难度
+							if(i>0&&i<3&&j>2&&j<5){
+								b = new Box({x:(j*boxWidth)+boxWidth/2+jiange , y:(i*boxWidth)+boxWidth/2+marginTop} , 1 , true , 0.5*Math.PI , {rows:i , cols:j});
+							}
+							else {
+								b = new Box({x:(j*boxWidth)+boxWidth/2+jiange , y:(i*boxWidth)+boxWidth/2+marginTop}, getRandom(0,2) , false , parseInt(getRandom(0,3))*0.5*Math.PI , {rows:i , cols:j});
+							}
+							boxes.push(b);
+						}
+					}
+
+					var n = getRandom(0 , allPath.length-1);
+					var path = allPath[n];
+					path.foreach(function(){
+						var index = this.rows*cols + this.cols;
+						if((this.rows==0&&this.cols==0)||(this.rows==(rows-1)&&this.cols==(cols-1))){
+							boxes[index] = new Box({x:(this.cols*boxWidth)+boxWidth/2+jiange , y:(this.rows*boxWidth)+boxWidth/2+marginTop} , this.style , true , 0 , {rows:this.rows , cols:this.cols});
+						}
+						else if(this.rows>0&&this.rows<3&&this.cols>2&&this.cols<5){
+							boxes[index] = new Box({x:(this.cols*boxWidth)+boxWidth/2+jiange , y:(this.rows*boxWidth)+boxWidth/2+marginTop} , this.style , true , 0.5*Math.PI ,  {rows:this.rows , cols:this.cols});
+						}
+						else{
+							boxes[index] = new Box({x:(this.cols*boxWidth)+boxWidth/2+jiange , y:(this.rows*boxWidth)+boxWidth/2+marginTop} , this.style , false , parseInt(getRandom(0,3))*0.5*Math.PI ,  {rows:this.rows , cols:this.cols});
+						}
+					});
+
+					Painter.drawWaterBox();
+					Painter.drawOutPipe();
+
+					animate();
+				}
+
+				//动画每一帧的发生舞台
+				function animate(){
+					ctx.clearRect(0,0,canvas.width,canvas.height)
+					Painter.drawBackGround();
+
+					//如果是当前运动中的水管块则跳过，当其他水管块绘制完后再单独绘制运动中的水管块，以保证其不被其他拼图覆盖
+					var number;
+					boxes.foreach(function(index){
+						if(this == activityBox){
+							number = index;
+						}
+						else this.draw();
+					});
+					if(activityBox) boxes[number].draw();
+
+					toolBoxes.foreach(function(){
+						if(this.constructor===WaterBox&&connectSuccess){
+							this.start = true;
+							if(this.end){
+								alert("你赢啦")
+								connectSuccess = false;
+								window.location.reload();
+							}
+						}
+						this.draw();
+					})
+					Painter.drawHaoZe();
+					RAF(animate)
+				}
+
+				//动画兼容性写法
+				window.RAF = (function(){
+					return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
+				})();
+
+				initAnimation();
+			}
+		})();
+
+		window.onload = PipeGame();
+	</script>
+</body>
+</html>

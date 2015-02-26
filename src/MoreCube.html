@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<style>
+		body{margin: 0;padding:0;}
+		#cas{margin:50px auto;display: block;}
+	</style>
+	<title>CUBE</title>
+</head>
+<body style="background-color:#000">
+	<canvas id="cas" width="700" height="700">您的浏览器不支持canvas</canvas>
+	<script>
+		var canvas = document.getElementById("cas");
+		var ctx = canvas.getContext("2d");
+		var fallLength = 500 , centerX = canvas.width/2 , centerY = canvas.height/2 , cubeLength = 180 , allFace = [];
+
+		Array.prototype.foreach = function(callback){
+			for(var i=0;i<this.length;i++){
+				callback.apply(this[i] , [i])
+			}
+		}
+
+		var Vector = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this._get2d = function(){
+				var scale = fallLength/(fallLength+this.z);
+				var x = centerX + this.x*scale;
+				var y = centerY + this.y*scale;
+				return {x:x , y:y};
+			}
+		}
+
+		var Cube = function(centerVector){
+			this.length = cubeLength/3;
+			this.faces = [];
+			this.vectors = [];
+			this.center = centerVector;
+		}
+		Cube.prototype = {
+			_initVector:function(){
+				this.vectors[0] = new Vector(this.center.x-this.length/2 , this.center.y-this.length/2 , this.center.z+this.length/2);
+				this.vectors[1] = new Vector(this.center.x-this.length/2 , this.center.y+this.length/2 , this.center.z+this.length/2); 
+				this.vectors[2] = new Vector(this.center.x+this.length/2 , this.center.y-this.length/2 , this.center.z+this.length/2); 
+				this.vectors[3] = new Vector(this.center.x+this.length/2 , this.center.y+this.length/2 , this.center.z+this.length/2); 
+				this.vectors[4] = new Vector(this.center.x+this.length/2 , this.center.y-this.length/2 , this.center.z-this.length/2);
+				this.vectors[5] = new Vector(this.center.x+this.length/2 , this.center.y+this.length/2 , this.center.z-this.length/2);
+				this.vectors[6] = new Vector(this.center.x-this.length/2 , this.center.y-this.length/2 , this.center.z-this.length/2);
+				this.vectors[7] = new Vector(this.center.x-this.length/2 , this.center.y+this.length/2 , this.center.z-this.length/2);
+			},
+			_draw:function(){
+				if(this.faces.length===0){
+					this.faces[0] = new Face(this.vectors[0] , this.vectors[1] , this.vectors[3] , this.vectors[2]);
+					this.faces[1] = new Face(this.vectors[2] , this.vectors[3] , this.vectors[5] , this.vectors[4]);
+					this.faces[2] = new Face(this.vectors[4] , this.vectors[5] , this.vectors[7] , this.vectors[6]);
+					this.faces[3] = new Face(this.vectors[6] , this.vectors[7] , this.vectors[1] , this.vectors[0]);
+					this.faces[4] = new Face(this.vectors[1] , this.vectors[3] , this.vectors[5] , this.vectors[7]);
+					this.faces[5] = new Face(this.vectors[0] , this.vectors[2] , this.vectors[4] , this.vectors[6]);
+				}
+				else {
+					this.faces[0].v1 = this.vectors[0] ; this.faces[0].v2 = this.vectors[1] ; this.faces[0].v3 = this.vectors[3] ; this.faces[0].v4 = this.vectors[2];
+					this.faces[1].v1 = this.vectors[2] ; this.faces[1].v2 = this.vectors[3] ; this.faces[1].v3 = this.vectors[5] ; this.faces[1].v4 = this.vectors[4];
+					this.faces[2].v1 = this.vectors[4] ; this.faces[2].v2 = this.vectors[5] ; this.faces[2].v3 = this.vectors[7] ; this.faces[2].v4 = this.vectors[6];
+					this.faces[3].v1 = this.vectors[6] ; this.faces[3].v2 = this.vectors[7] ; this.faces[3].v3 = this.vectors[1] ; this.faces[3].v4 = this.vectors[0];
+					this.faces[4].v1 = this.vectors[1] ; this.faces[4].v2 = this.vectors[3] ; this.faces[4].v3 = this.vectors[5] ; this.faces[4].v4 = this.vectors[7];
+					this.faces[5].v1 = this.vectors[0] ; this.faces[5].v2 = this.vectors[2] ; this.faces[5].v3 = this.vectors[4] ; this.faces[5].v4 = this.vectors[6];
+				}
+
+				var x=0,y=0,z=0;
+				this.vectors.foreach(function(){
+					x += this.x;
+					y += this.y;
+					z += this.z;
+				})
+				x = x/this.vectors.length;
+				y = y/this.vectors.length;
+				z = z/this.vectors.length;
+				this.center.x = x;
+				this.center.y = y;
+				this.center.z = z;
+			}
+		}
+
+		var Face = function(vector1,vector2,vector3,vector4){
+			this.v1 = vector1;
+			this.v2 = vector2;
+			this.v3 = vector3;
+			this.v4 = vector4;
+			this.color = "#666";
+			this.zIndex = (this.v1.z + this.v2.z + this.v3.z + this.v4.z)/4;
+			this.center = {
+				x:(vector1.x + vector2.x + vector3.x + vector4.x)/4,
+				y:(vector1.y + vector2.y + vector3.y + vector4.y)/4,
+				z:(vector1.z + vector2.z + vector3.z + vector4.z)/4
+			}
+			this.initzIndex = function(){
+				this.zIndex = (this.v1.z + this.v2.z + this.v3.z + this.v4.z)/4;
+			}
+			this.draw = function(){
+				ctx.save();
+				ctx.beginPath();
+				ctx.moveTo(this.v1._get2d().x , this.v1._get2d().y);
+				ctx.lineTo(this.v2._get2d().x , this.v2._get2d().y);
+				ctx.lineTo(this.v3._get2d().x , this.v3._get2d().y);
+				ctx.lineTo(this.v4._get2d().x , this.v4._get2d().y);
+				ctx.closePath();
+				// ctx.fillStyle = "rgba("+parseInt(Math.random()*255)+","+parseInt(Math.random()*255)+","+parseInt(Math.random()*255)+",0.2)";
+				ctx.fillStyle = this.color;
+				ctx.fill();
+				ctx.strokeStyle = "#29F0EA"
+				ctx.stroke();
+			}
+		}
+
+		var angleX = 0.05;
+		var angleY = 0.05;
+
+		if("addEventListener" in window){
+			window.addEventListener("mousemove" , function(event){
+				var x = event.clientX - canvas.offsetLeft - centerX;
+				var y = event.clientY - canvas.offsetTop - centerY;
+				angleY = x*0.0001;
+				angleX = y*0.0001;
+			});
+		}
+		else {
+			window.attachEvent("onmousemove" , function(event){
+				var x = event.clientX - canvas.offsetLeft - centerX;
+				var y = event.clientY - canvas.offsetTop - centerY;
+				angleY = x*0.0001;
+				angleX = y*0.0001;
+			});
+		}
+		
+
+		function rotateX(vectors , angleX){
+			var cos = Math.cos(angleX);
+			var sin = Math.sin(angleX);
+			vectors.foreach(function(){
+				var y1 = this.y * cos - this.z * sin;
+				var z1 = this.z * cos + this.y * sin;
+				this.y = y1;
+				this.z = z1;
+			});
+		}
+
+		function rotateY(vectors , angleY){
+			var cos = Math.cos(angleY);
+			var sin = Math.sin(angleY);
+			vectors.foreach(function(){
+				var x1 = this.x * cos - this.z * sin;
+				var z1 = this.z * cos + this.x * sin;
+				this.x = x1;
+				this.z = z1;
+			});
+		}
+
+		function rotateP(vectors , angle ,  p){
+			var cos = Math.cos(angle);
+			var sin = Math.sin(angle);
+			vectors.foreach(function(){
+				var u = p.x;
+				var v = p.y;
+				var w = p.z;
+
+				var uu = u * u;
+			    var uv = u * v;
+			    var uw = u * w;
+			    var vv = v * v;
+			    var vw = v * w;
+			    var ww = w * w;
+			    var cosd = 1-cos;
+
+				var p00 = cos + uu * cosd;
+				var p01 = uv * cosd + w * sin;
+				var p02 = uw * cosd - v * sin;
+
+				var p10 = uv * cosd - w * sin;
+				var p11 = cos + vv * cosd;
+				var p12 = vw * cosd + u * sin;
+
+				var p20 = uw * cosd + v * sin;
+				var p21 = vw * cosd - u * sin;
+				var p22 = cos + ww * cosd;
+
+				var x = this.x;
+				var y = this.y;
+				var z = this.z;
+				
+				this.x = this.x * p00 + this.y * p10 + this.z * p20;
+				this.z = this.x * p02 + this.y * p12 + this.z * p22;
+				this.y = this.x * p01 + this.y * p11 + this.z * p21;
+			});
+		}
+
+		var cubes_1 = [] , cubes_2 = [] , cubes_3 = [] , allcube = [] , allFace = [] , juli =33;
+		function initAnimate(){
+			allcube[0] = cubes_1[0] = new Cube({x:0 , y:(cubeLength/3+juli) , z:0});
+			allcube[1] = cubes_1[1] = new Cube({x:-(cubeLength/3+juli) , y:(cubeLength/3+juli) , z:0});
+			allcube[2] = cubes_1[2] = new Cube({x:-(cubeLength/3+juli) , y:(cubeLength/3+juli) , z:(cubeLength/3+juli)});
+			allcube[3] = cubes_1[3] = new Cube({x:0 , y:(cubeLength/3+juli) , z:(cubeLength/3+juli)});
+			allcube[4] = cubes_1[4] = new Cube({x:(cubeLength/3+juli) , y:(cubeLength/3+juli) , z:(cubeLength/3+juli)});
+			allcube[5] = cubes_1[5] = new Cube({x:(cubeLength/3+juli) , y:(cubeLength/3+juli) , z:0});
+			allcube[6] = cubes_1[6] = new Cube({x:(cubeLength/3+juli) , y:(cubeLength/3+juli) , z:-(cubeLength/3+juli)});
+			allcube[7] = cubes_1[7] = new Cube({x:0 , y:(cubeLength/3+juli) , z:-(cubeLength/3+juli)});
+			allcube[8] = cubes_1[8] = new Cube({x:-(cubeLength/3+juli) , y:(cubeLength/3+juli) , z:-(cubeLength/3+juli)});
+
+			cubes_1.foreach(function(){
+				allcube[allcube.length] = cubes_2[cubes_2.length] = new Cube({x:this.center.x , y:0 , z:this.center.z});
+				allcube[allcube.length] = cubes_3[cubes_3.length] = new Cube({x:this.center.x , y:-(cubeLength/3+juli) , z:this.center.z});
+			});
+			
+			allcube.foreach(function(){
+				this._initVector();
+				this._draw();
+				this.faces.foreach(function(){
+					allFace[allFace.length] = this;
+				})
+			});
+
+			allFace.sort(function(a , b){
+				return b.zIndex - a.zIndex;
+			})
+
+			allFace.foreach(function(){
+				this.initzIndex()
+				this.draw();
+			});
+			animate();
+		}
+
+		var opacity = 1 , derection = true , color = "255,255,255";
+		function animate(){
+			// ctx.clearRect(0,0,canvas.width,canvas.height)
+			ctx.save();
+			ctx.fillStyle = "rgba(0,0,0,0.2)"
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			ctx.restore();
+			allFace = [];
+			allcube.foreach(function(){
+				this.faces.foreach(function(){
+					allFace[allFace.length] = this;
+				});
+				rotateX(this.vectors , angleX);
+				rotateY(this.vectors , angleY);
+				this._draw();
+			});
+
+			allFace.foreach(function(){
+				// if(this.center.z === (cubeLength/2+juli)){
+				// 	this.color = "#cc6"
+				// }
+				// else if(this.center.z === -(cubeLength/2+juli)){
+				// 	this.color = "#6cc"
+				// }
+				// else if(this.center.x === (cubeLength/2+juli)){
+				// 	this.color = "#66c"
+				// }
+				// else if(this.center.x === -(cubeLength/2+juli)){
+				// 	this.color = "#c66"
+				// }
+				// else if(this.center.y === (cubeLength/2+juli)){
+				// 	this.color = "#ddd"
+				// }
+				// else if(this.center.y === -(cubeLength/2+juli)){
+				// 	this.color = "#256"
+				// }
+
+				this.color = "rgba("+color+","+opacity/10000+")";
+				derection ? opacity ++ : opacity--;
+				if(opacity>=13000){
+					derection = false;
+				}
+				else if(opacity<=-3000){
+					derection = true;
+					color = parseInt(Math.random()*128)+","+parseInt(Math.random()*128)+","+parseInt(Math.random()*128);
+				}
+			});
+			// cubes_1.foreach(function(){
+			// 	rotateP(this.vectors , 0.001 ,  allcube[10].center);
+			// });
+			// cubes_2.foreach(function(){
+
+			// });
+			// cubes_3.foreach(function(){
+			// 	rotateP(this.vectors , -0.001 , allcube[10].center);
+			// });
+
+			allFace.sort(function(a , b){
+				return b.zIndex - a.zIndex;
+			});
+
+			allFace.foreach(function(){
+				this.initzIndex()
+				this.draw();
+			});
+			
+			if("requestAnimationFrame" in window){
+				requestAnimationFrame(animate);
+			}
+			else if("webkitRequestAnimationFrame" in window){
+				webkitRequestAnimationFrame(animate);
+			}
+			else if("msRequestAnimationFrame" in window){
+				msRequestAnimationFrame(animate);
+			}
+			else if("mozRequestAnimationFrame" in window){
+				mozRequestAnimationFrame(animate);
+			}
+			else {
+				setTimeout(animate , 16);
+			}
+		}
+
+		initAnimate();
+	</script>
+</body>
+</html>

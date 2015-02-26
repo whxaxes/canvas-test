@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+		html{overflow: hidden;}
+		body{margin: 0;}
+		#cas{background-color: #CCC;display: block;margin:auto;}
+	</style>
+	<title>酷炫时钟</title>
+</head>
+<body>
+	<canvas id="cas" width="1400" height="600">抱歉，您的浏览器不支持canvas</canvas>
+	<script>
+		var numData = [
+			"1111/1001/1001/1001/1001/1001/1111", //0
+			"0001/0001/0001/0001/0001/0001/0001", //1
+			"1111/0001/0001/1111/1000/1000/1111", //2
+			"1111/0001/0001/1111/0001/0001/1111", //3
+			"1001/1001/1001/1111/0001/0001/0001", //4
+			"1111/1000/1000/1111/0001/0001/1111", //5
+			"1111/1000/1000/1111/1001/1001/1111", //6
+			"1111/0001/0001/0001/0001/0001/0001", //7
+			"1111/1001/1001/1111/1001/1001/1111", //8
+			"1111/1001/1001/1111/0001/0001/1111", //9
+			"0000/0000/0010/0000/0010/0000/0000", //:
+		]
+
+		var canvas = document.getElementById("cas"),
+			bgcanvas = document.createElement("canvas"),
+			ctx = canvas.getContext('2d'),
+			bgctx = bgcanvas.getContext("2d"),
+			xjg = 20,
+			yjg = 22;
+
+		bgcanvas.width = canvas.width;
+		bgcanvas.height = canvas.height;
+
+		var P_radius = 6,Gravity = 9.8;
+		var Particle = function(){
+			this.x = 0;
+			this.y = 0;
+			this.vx = 0;
+			this.vy = 0;
+			this.color = "";
+			this.visible = false;
+			this.drop = false;
+		}
+		Particle.prototype = {
+			constructors:Particle,
+			paint:function(){		//绘制自身
+				ctx.fillStyle = this.color;
+				ctx.beginPath();
+				ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
+				ctx.fill();
+			},
+			reset:function(x,y,color){		//重置
+				this.x = x;
+				this.y = y;
+				this.vx = 0;
+				this.vy = 0;
+				this.color = color;
+				this.visible = true;
+				this.drop = false;
+				this.radius = 0;
+			},
+			isDrop:function(){		//落下
+				this.drop = true;
+				var vx = Math.random()*15+10
+				var vy = -Math.random()*50+10;
+				this.vx = Math.random()>=0.5?-vx : vx;
+				this.vy = vy;
+			},
+			update:function(time){		//每一帧的动作
+				if(this.drop){
+					this.x += this.vx*time;
+					this.y += this.vy*time;
+
+					var vy = this.vy+Gravity*time;
+
+					if(this.y>=canvas.height-P_radius){
+						this.y = canvas.height-P_radius
+						vy = -vy*0.8;
+					}
+
+					this.vy = vy;
+
+					if(this.x<-P_radius||this.x>canvas.width+P_radius||this.y>canvas.height+P_radius){
+						this.visible = false;
+					}
+				}
+
+				if(this.radius<P_radius){
+					this.radius+=0.5;
+				}
+			}
+		}
+
+		window.RAF =  (function(){
+			return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
+		})();
+
+		var timeCount_0 = 0,timeCount_1 = 0,particles = [];
+		function initAnimate(){
+			for(var i=0;i<200;i++){
+				var p = new Particle();
+				particles.push(p);
+			}
+
+			timeCount_0 = new Date();
+			timeCount_1 = new Date();
+			drawBg();
+			setTime(timeCount_0)
+			animate();
+		}
+
+		function animate(){
+			ctx.clearRect(0,0,canvas.width,canvas.height);
+			ctx.drawImage(bgcanvas,0,0);
+
+			var timeCount_2 = new Date();
+
+			if(timeCount_1-timeCount_0>=1000){
+				setTime(timeCount_1);
+				timeCount_0 = timeCount_1;
+			}
+
+			particles.forEach(function(p){
+				if(p.visible){
+					p.update(16/70);
+					p.paint();
+				}
+			});
+			
+			circleClock(timeCount_2)
+			
+			timeCount_1 = timeCount_2;
+
+			RAF(animate)
+		}
+
+
+		var X_J = 10
+		function drawBg(){
+			var tx = (canvas.width-((P_radius*2+X_J)*4*8+7*xjg))/2;
+			for(var i=0;i<8;i++){
+				var ty = (canvas.height-((P_radius+yjg)*6))/2;
+				for(var j=0;j<numData[0].length;j++){
+					var tt = numData[0].charAt(j);
+					if(tt==="/"){
+						ty+=yjg;
+					}else {
+						var x = tx+j%5*(P_radius*2+X_J),
+							y = ty;
+						bgctx.beginPath();
+						bgctx.arc(x,y,P_radius,0,2*Math.PI);
+						bgctx.fillStyle = "#FFF";
+						bgctx.fill();
+					}
+				}
+				tx+=xjg+4*(P_radius*2+X_J);
+			}
+		}
+
+		function setTime(time){
+			var h = time.getHours()+"",
+				m = time.getMinutes()+"",
+				s = time.getSeconds()+"";
+			h = h.length===1?"0"+h:h;
+			m = m.length===1?"0"+m:m;
+			s = s.length===1?"0"+s:s;
+
+			var nowdate = h+":"+m+":"+s;
+			var tx = (canvas.width-((P_radius*2+X_J)*4*8+7*xjg))/2,color = "";
+			for(var i=0;i<nowdate.length;i++){
+				var n = nowdate.charAt(i)===":"?10:parseInt(nowdate.charAt(i)),
+					text = numData[n];
+
+				var ty = (canvas.height-((P_radius+yjg)*6))/2;
+
+				switch(i){
+					case 0:color = "#279548";break;
+					// case 2:color = "#4062E0";break;
+					case 3:color = "#D65050";break;
+					// case 5:color = "#4062E0";break;
+					case 6:color = "#797C17";break;
+				}
+
+				for(var j=0;j<text.length;j++){
+					var tt = text.charAt(j);
+					if(tt==="/"){
+						ty+=yjg;
+					}else{
+						var x = tx+j%5*(P_radius*2+X_J),
+							y = ty,
+							pp = null,
+							usefullp = null;
+						particles.forEach(function(p){
+							if(p.visible&&p.x===x&&p.y===y){
+								pp = p;
+							}else if(!p.visible&&usefullp===null){
+								usefullp = p;
+							}
+						});
+						if(pp!==null&&tt==="0"){
+							pp.isDrop();
+						}else if(pp===null&&tt==="1"){
+							usefullp.reset(x , y , color);
+						}
+					}
+				}
+				tx+=xjg+4*(P_radius*2+X_J);
+			}
+		}
+
+		function circleClock(time){
+			drawCircleTime(365 , 100 , 50 , "#279548" ,  time ,  "h");
+			drawCircleTime(688 , 100 , 50 , "#D65050" ,  time , "m");
+			drawCircleTime(1010 , 100 , 50 , "#797C17" ,  time , "s");
+		}
+		
+		var olsecond = 0;
+		var sin = false;
+		function drawCircleTime(x , y , r , color , time , kind){
+			var angle = 0 , inangle = 0 , number = 0;
+			switch(kind){
+				case "h":
+					angle = Math.PI*2*(time.getHours()*60+time.getMinutes())/(24*60) - Math.PI/2;
+					// inangle = Math.PI*2*(time.getMinutes()*60+time.getSeconds())/(60*60) - Math.PI/2;
+					number = time.getHours();
+					break;
+				case "m":
+					angle = Math.PI*2*(time.getMinutes()*60+time.getSeconds())/(60*60) - Math.PI/2;
+					// inangle = Math.PI*2*(time.getSeconds()*1000+time.getMilliseconds())/(60*1000) - Math.PI/2;
+					number = time.getMinutes();
+					break;
+				case "s":
+					angle = Math.PI*2*(time.getSeconds()*1000+time.getMilliseconds())/(60*1000) - Math.PI/2;
+					inangle = Math.PI*2*time.getMilliseconds()/1000 - Math.PI/2;
+					if(time.getSeconds()!==olsecond){
+						sin = !sin;
+						olsecond = time.getSeconds()
+					}
+					number = time.getSeconds();
+					break;
+			}
+			var linewidth = 20;
+
+			ctx.lineWidth = linewidth;
+
+			if(inangle&&sin){
+				ctx.save();
+				ctx.beginPath();
+				ctx.moveTo(x , y);
+				ctx.lineTo(x , y-r);
+				ctx.arc(x , y , r , -Math.PI/2 , inangle);
+				ctx.closePath();
+				ctx.fillStyle = "rgba(0,0,0,0.1)";
+				ctx.fill()
+				ctx.restore();
+			}else if(inangle&&!sin){
+				ctx.save();
+				ctx.beginPath();
+				ctx.arc(x , y , r , 0 , 2*Math.PI);
+				ctx.closePath();
+				ctx.fillStyle = "rgba(0,0,0,0.1)";
+				ctx.fill()
+				
+				ctx.beginPath();
+				ctx.moveTo(x , y);
+				ctx.lineTo(x , y-r);
+				ctx.arc(x , y , r , -Math.PI/2 , inangle);
+				ctx.closePath();
+				ctx.fillStyle = "#ccc";
+				ctx.fill()
+				ctx.restore();
+			}
+			
+//			ctx.beginPath();
+//			ctx.arc(x , y , r+linewidth/2 , 0 , Math.PI*2);
+//			ctx.strokeStyle = "rgba(0,0,0,0.1)";
+//			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.arc(x , y , r+linewidth/2 , -Math.PI/2 , angle);
+			ctx.fillStyle = color;
+			ctx.strokeStyle = color;
+			ctx.stroke();
+			ctx.font = "40px 微软雅黑";
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.fillText(number , x , y);
+
+//			ctx.lineWidth = 2;
+//			ctx.beginPath();
+//			ctx.arc(x , y , r , 0 , Math.PI*2);
+//			ctx.strokeStyle = "#FFF";
+//			ctx.stroke();
+//			ctx.beginPath();
+//			ctx.arc(x , y , r+linewidth , 0 , Math.PI*2);
+//			ctx.stroke();
+		}
+
+		initAnimate()
+	</script>
+</body>
+</html>

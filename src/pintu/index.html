@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="cache-control" content="no-cache,no-store">
+	<meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=0">
+	<title>拼图游戏</title>
+	<style type="text/css">
+		body{margin:0;}
+		.view{overflow: hidden;position: absolute;top: 0;bottom: 0;left: 0;right: 0;}
+		.box{width:440px;height:369px;position: absolute;top: 0;bottom: 0;left: 0;right: 0;margin:auto;}
+		.box>div{width: 33.333%;height: 33.333%;position: absolute;background:url(img.jpeg) no-repeat;box-shadow: 0px 0px 1px #000;-webkit-transition:left .3s,top .3s;backface-visibility: visible;}
+		.fx1{left:0;top: 0;}
+		.fx2{left:33.333%;top: 0;}
+		.fx3{left:66.666%;top: 0;}
+		
+		.fx4{left:0;top: 33.333%;}
+		.fx5{left:33.333%;top: 33.333%;}
+		.fx6{left:66.666%;top: 33.333%;}
+		
+		.fx7{left:0;top: 66.666%;}
+		.fx8{left:33.333%;top: 66.666%;}
+		.fx9{left:66.666%;top: 66.666%;}
+		
+		.view .actfx{box-shadow: 0px 0px 5px #f00;z-index: 10;}
+	</style>
+</head>
+<body>
+	<div class="view">
+		<div class="box">
+			<div class="fx1" index='1'></div>
+			<div class="fx2" index='2'></div>
+			<div class="fx3" index='3'></div>
+			<div class="fx4" index='4'></div>
+			<div class="fx5" index='5'></div>
+			<div class="fx6" index='6'></div>
+			<div class="fx7" index='7'></div>
+			<div class="fx8" index='8'></div>
+			<div class="fx9" index='9'></div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../public/zepto.min.js" ></script>
+	<script type="text/javascript" charset="utf-8">
+		var $box = $('.box');
+		var tap = "ontouchstart" in window?"touchstart":"click",
+			start = false,
+			ca = new Array(),
+			dlTimes = 5, //拼图打乱的次数
+			$bd = $(".box>div");
+		setTimeout(function(){
+			var array = $bd.slice(0)
+			var i = 0;
+			var xh = setInterval(function(){
+				array.sort(function(a,b){
+					return Math.random()-Math.random();
+				})
+				
+				array.forEach(function(a,i){
+					a.className = "fx"+(i+1)
+				})
+				
+				i++;
+				if(i===dlTimes) {
+					clearInterval(xh)
+					start = true;
+					i=0
+				}
+			},300)
+		},1000)
+		
+		$bd.each(function(){
+			$(this).css({
+				"background-size":$box.width()+"px "+$box.height()+"px" ,
+				"background-position":-($(this).offset().left-$box.offset().left)+"px -"+($(this).offset().top-$box.offset().top)+"px"
+			})
+		}).on(tap,function(e){
+			if(!start) return;
+			$(this).toggleClass("actfx");
+			
+			if(ca.indexOf(this)>=0){
+				ca.length=0;
+			}else {
+				ca.push(this);
+				if(ca.length===2){
+					var ca0 = $(ca[0]),
+						ca1 = $(ca[1]),
+						jgw = ca0.offset().left>ca1.offset().left?ca0.offset().left-(ca1.offset().left+ca1.width()):ca1.offset().left-(ca0.offset().left+ca0.width()),
+						jgh = ca0.offset().top>ca1.offset().top?ca0.offset().top-(ca1.offset().top+ca1.height()):ca1.offset().top-(ca0.offset().top+ca0.height());
+					console.log(jgw)
+					if((jgw<ca0.width()/2&&ca0.offset().top===ca1.offset().top)||(jgh<ca0.height()/2&&ca0.offset().left===ca1.offset().left)){
+						var cn = ca[0].className;
+						ca[0].className = ca[1].className;
+						ca[1].className = cn;
+						ca.length = 0;
+						setTimeout(function(){
+							$bd.removeClass("actfx")
+							var num = 0;
+							for(var i=0;i<$bd.length;i++){
+								if($bd[i].className.indexOf($bd[i].getAttribute("index"))>=0) num++;
+								else break;
+							}
+							if(num===$bd.length){alert("you win")}
+						},300)
+					}else {
+						ca.length=0;
+						$bd.removeClass("actfx")
+					}
+				}
+			}
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<style>
+		body{margin:0;padding:0;}
+		.allCanvas{
+			position: relative;
+			margin:50px auto;
+            border:1px solid;
+			width:600px;
+			height:400px;
+		}
+		.vcanvas{
+			position: absolute;
+			display: block;
+            box-shadow:#333 0 0 3px;
+		}
+		.highZindex{
+			z-index:50;
+		}
+	</style>
+	<title>视频拼图</title>
+</head>
+<body>
+	<div class="allCanvas">
+		<canvas id="liping" width="600" height="400" style="display:none"></canvas>
+	</div>
+	<video id="video" src="http://www.w3school.com.cn/example/html5/mov_bbb.mp4" width="600px" height="400px" controls="control" loop="loop" style="display:block;position:absolute;top:-6000px;"></video>
+	<script>
+		var video = document.getElementById("video");
+		var cs = document.getElementById("liping");
+		var ctx = cs.getContext('2d')
+		var rows = 3,
+			cols = 2,
+			cb = document.querySelector(".allCanvas"),
+			vw = 600,
+			vh = 400,
+			ww = window.innerWidth || document.body.clientWidth || document.documentElement.clientWidth,
+			wh = window.innerHeight || document.body.clientHeight || document.documentElement.clientHeight,
+			maxindex = 10,
+			canvases = [];
+
+		function createCanvas(){
+			var num = rows*cols;
+			for(var i=0;i<cols;i++){
+				for(var j=0;j<rows;j++){
+					var canvas = new vCanvas(Math.random()*getRandom(-100 , 700), Math.random()*getRandom(0 , wh-vh/cols)-cb.offsetTop , vw/rows , vh/cols , j , i);
+					canvases.push(canvas);
+				}
+			}
+		}
+
+		function getRandom(a , b){
+			return Math.random()*(b-a) + a;
+		}
+
+		var vCanvas = function(x,y,w,h,cols,rows){
+			this.x = x;
+			this.y = y;
+			this.w = w;
+			this.h = h;
+			this.cols = cols;
+			this.rows = rows;
+			this.creat();
+			this.behavior();
+		}
+		vCanvas.prototype = {
+			creat:function(){
+				this.cas = document.createElement("canvas");
+				cb.appendChild(this.cas);
+				this.cas.className = "vcanvas";
+				this.cas.style.left = this.x+"px";
+				this.cas.style.top = this.y+"px";
+				this.cas.width = this.w;
+				this.cas.height = this.h;
+				this.cas.style.zIndex = maxindex-1;
+			},
+			behavior:function(){
+				this.cas.onmousedown = function(e){
+					e = e || window.event;
+					var that = this;
+					var om = {
+						x:e.clientX,
+						y:e.clientY
+					}
+					if(parseInt(this.style.zIndex) < maxindex){
+						this.style.zIndex = maxindex+1;
+						maxindex = parseInt(this.style.zIndex);
+					}
+					window.onmousemove = function(e){
+						e = e || window.event;
+						var nm = {
+							x:e.clientX,
+							y:e.clientY
+						}
+						that.style.left = parseInt(that.style.left.replace("px","")) + (nm.x-om.x) + "px";
+						that.style.top = parseInt(that.style.top.replace("px","")) + (nm.y-om.y) + "px";
+						om = nm;
+					}
+					window.onmouseup = function(){
+						this.onmousemove = null;
+					}
+				}
+			}
+		}
+
+		Array.prototype.forEach = function(callback){
+			for(var i=0;i<this.length;i++){
+				callback.call(this[i]);
+			}
+		}
+
+		var lastTime = 0;
+		function initAnimate(){
+			lastTime = new Date();
+			createCanvas();
+			animate();
+		}
+
+		function animate(){
+			var newTime = new Date();
+			if(newTime - lastTime > 30){
+				lastTime = newTime;
+				ctx.drawImage(video , 0 , 0 , vw , vh);
+
+				canvases.forEach(function(){
+					var ctx2 = this.cas.getContext('2d');
+					ctx2.drawImage(cs , -this.cols*this.w , -this.rows*this.h , vw , vh);
+				});
+			}
+			if("requestAnimationFrame" in window){
+				requestAnimationFrame(animate);
+			}
+			else if("webkitRequestAnimationFrame" in window){
+				webkitRequestAnimationFrame(animate);
+			}
+			else if("msRequestAnimationFrame" in window){
+				msRequestAnimationFrame(animate);
+			}
+			else if("mozRequestAnimationFrame" in window){
+				mozRequestAnimationFrame(animate);
+			}
+		}
+
+		video.play();
+		initAnimate();
+	</script>
+</body>
+</html>

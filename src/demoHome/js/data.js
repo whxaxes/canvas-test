@@ -1,0 +1,22 @@
+var demoData = [
+    {src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/music.png" , title:"音频效果" , href:"http://2.axescanvas.sinaapp.com/musicPlayer/" },
+    {src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/guaguaka.png" , title:"刮刮卡" , href:"../clip/clip.html" },
+    {src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/pintu.png" , title:"拼图游戏" , href:"../pintu/index.html" },
+    {src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/coolClock.png" , title:"coolClock" , href:"../coolClock/index.html" },
+    {src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/runningMan.png" , title:"runningMan" , href:"../runningMan/index.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/flappyPeople.png" , title:"FlappyPeople" , href:"../FlppyPeople/index.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/plan.png" , title:"飞机大战游戏" , href:"../planGame/index.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/pipe.png" , title:"接水管游戏" , href:"../connectPipe/easyPipes.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/yanhuo.png" , title:"烟火DEMO" , href:"../shotFire/shotFire.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/sinuoke.png" , title:"桌球游戏" , href:"../snooker/snooker.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/cache.png" , title:"canvas缓存DEMO" , href:"../cache/test.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/3dtag.png" , title:"3d标签云" , href:"../LoveDemo/firstLove.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/mm.png" , title:"文字图片粒子化" , href:"../LoveDemo/secondLove.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/3d.png" , title:"3D立方体" , href:"../cube.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/more3d.png" , title:"3D立方体——2" , href:"../MoreCube2.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/ball.png" , title:"弹力小球" , href:"../shotBall.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/pingtu.png" , title:"视频拼图" , href:"../vedioPintu.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/css3d.png" , title:"css3实现3D" , href:"../3Dhouses/3DPicSlide.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/css3d_2.png" , title:"css3实现3D——2" , href:"../3Dhouses/index.html"},
+	{src:"http://1.datalib.sinaapp.com/staticDemo/demoHome/huitu.png" , title:"简单多边形绘制拖动" , href:"../duobianxing.html"}
+]
