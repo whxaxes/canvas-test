@@ -2,16 +2,16 @@ canvas = document.getElementById 'cas'
 ctx = canvas.getContext("2d")
 
 bufferCanvas = document.createElement("canvas");
-bufferCanvas.width = bufferCanvas.height = canvas.width;
 bufferCtx = bufferCanvas.getContext("2d");
 
+bufferCanvas.width = canvas.width = document.body.offsetWidth
+bufferCanvas.height = canvas.height = document.body.offsetHeight
+window.onresize = ->
+  bufferCanvas.width = canvas.width = document.body.offsetWidth
+  bufferCanvas.height = canvas.height = document.body.offsetHeight
+
 RAF = do ->
-  return window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      window.oRequestAnimationFrame ||
-      window.msRequestAnimationFrame ||
-      (callback)->
+  return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || (callback)->
         window.setTimeout(callback, 1000 / 60)
 
 class Particle
@@ -38,10 +38,8 @@ class Particle
     @x += @vx;
     @y += @vy;
 
-    if @x<=0 || @x>=canvas.width+@r*2
-      @vx = -@vx
-    if @y<=0 || @y>=canvas.height+@r*2
-      @vy = -@vy
+#    @vx = if 0 < @x < canvas.width+@r*2 then @vx else -@vx;
+#    @vy = if 0 < @y < canvas.height+@r*2 then @vy else -@vy;
 
   attract:->
     @ax = @ay = 0;
@@ -51,8 +49,8 @@ class Particle
       angle = Math.atan(cx/cy)
       dis = Math.sqrt(cx*cx + cy*cy);
 
-      dis = if dis < 200 then 200 else dis;
-      power = bh.power * dis/5000;
+      power = bh.power * 0.1;
+
       lax = Math.abs(power*Math.sin(angle));
       lay = Math.abs(power*Math.cos(angle));
       @ax += if cx>0 then lax else -lax;
@@ -71,9 +69,60 @@ class Particle
 
 particles = [];
 blackholes = [];
+BH_SIZE = 20;
+
+#预渲染黑洞图片
+bhImage = do->
+  bhCas = document.createElement("canvas");
+  bhCas.width = bhCas.height = BH_SIZE*2
+  bhCtx = bhCas.getContext("2d");
+
+  opacity = 0;
+  for i in [0...20]
+    opacity += 0.05;
+    bhCtx.beginPath();
+    bhCtx.fillStyle = "rgba(188,186,187,#{opacity})"
+    bhCtx.arc(bhCas.width/2, bhCas.height/2, BH_SIZE-i, 0, Math.PI * 2)
+    bhCtx.fill()
+
+  bhCtx.beginPath();
+  bhCtx.fillStyle = "#000"
+  bhCtx.arc(bhCas.width/2, bhCas.height/2, BH_SIZE-5, 0, Math.PI * 2)
+  bhCtx.fill()
+  return bhCas
+
+target = null
+canvas.onmousedown = (e)->
+  x = e.clientX - @offsetLeft
+  y = e.clientY - @offsetTop
+  for bh,i in blackholes
+    cx = bh.x-x
+    cy = bh.y-y
+    if cx*cx + cy*cy <= BH_SIZE*BH_SIZE
+      target = bh
+      break;
+
+  if !target && e.button==0
+    blackholes.push({x:x,y:y,r:BH_SIZE,power:2})
+  else
+    if e.button==2
+      blackholes.splice(i , 1);
+
+
+
+
+canvas.onmousemove = (e)->
+  if target
+    x = e.clientX - @offsetLeft
+    y = e.clientY - @offsetTop
+    target.x = x
+    target.y = y
+
+canvas.onmouseup = canvas.onmouseout = (e)->
+  target = null
 
 execAnimate = ->
-  for i in [1...100]
+  for i in [1...200]
     particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: 2))
 
   animate();
@@ -88,10 +137,7 @@ animate = ->
   ctx.clearRect(0,0,canvas.width , canvas.height);
 
   for bh in blackholes
-    ctx.beginPath()
-    ctx.fillStyle = "#000"
-    ctx.arc(bh.x-5, bh.y-5, 5, 0, Math.PI * 2)
-    ctx.fill()
+    ctx.drawImage(bhImage , bh.x-bh.r , bh.y-bh.r , bh.r*2 , bh.r*2)
 
   for p in particles
     p.attract()
@@ -102,8 +148,3 @@ animate = ->
   RAF(animate)
 
 execAnimate()
-
-canvas.onclick = (e)->
-  x = e.clientX - this.offsetLeft
-  y = e.clientY - this.offsetTop
-  blackholes.push({x:x,y:y,power:1})
