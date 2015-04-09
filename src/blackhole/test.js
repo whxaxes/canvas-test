@@ -33,7 +33,7 @@
 
   Particle = (function() {
     function Particle(options) {
-      this.x = options.x, this.y = options.y, this.r = options.r;
+      this.x = options.x, this.y = options.y, this.r = options.r, this.color = options.color;
       this._init();
     }
 
@@ -79,7 +79,7 @@
 
     Particle.prototype.draw = function() {
       bufferCtx.save();
-      bufferCtx.strokeStyle = "#FFF";
+      bufferCtx.strokeStyle = this.color;
       bufferCtx.lineCap = bufferCtx.lineJoin = "round";
       bufferCtx.lineWidth = this.r;
       bufferCtx.beginPath();
@@ -216,12 +216,21 @@
   };
 
   execAnimate = function() {
-    var i, k;
+    var colors, i, k, n;
     for (i = k = 1; k < 200; i = ++k) {
+      colors = (function() {
+        var l, results;
+        results = [];
+        for (n = l = 0; l < 3; n = ++l) {
+          results.push(parseInt(Math.random() * 125 + 130));
+        }
+        return results;
+      })();
       particles.push(new Particle({
         x: canvas.width * Math.random(),
         y: canvas.height * Math.random(),
-        r: 2
+        r: Math.random() * 2 + 1,
+        color: "rgba(" + colors[0] + "," + colors[1] + "," + colors[2] + ",1)"
       }));
     }
     return animate();

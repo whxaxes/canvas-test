@@ -22,7 +22,7 @@ RAF = do ->
 #粒子类
 class Particle
   constructor: (options)->
-    {@x , @y , @r} = options
+    {@x , @y , @r , @color} = options
     this._init()
 
   _init: ->
@@ -63,7 +63,7 @@ class Particle
 
   draw: ->
     bufferCtx.save()
-    bufferCtx.strokeStyle = "#FFF"
+    bufferCtx.strokeStyle = @color
     bufferCtx.lineCap = bufferCtx.lineJoin = "round"
     bufferCtx.lineWidth = @r;
     bufferCtx.beginPath();
@@ -170,7 +170,8 @@ canvas.onmouseup = canvas.onmouseout = (e)->
 #执行动画
 execAnimate = ->
   for i in [1...200]
-    particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: 2))
+    colors = (parseInt(Math.random()*125 + 130) for n in [0...3])
+    particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(#{colors[0]},#{colors[1]},#{colors[2]},1)"))
 
   animate();
 
