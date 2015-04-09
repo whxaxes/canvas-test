@@ -1,7 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<!doctype html>
+<html lang="en">
 <head>
-	<meta http-equiv="Content-Type" content="text/html;charst=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<style>
 		#cas{
 			display: block;
@@ -148,7 +148,7 @@
 				var scale = focallength/(focallength + this.z);
 				context.arc(canvas.width/2 + (this.x-canvas.width/2)*scale , canvas.height/2 + (this.y-canvas.height/2) * scale, this.radius*scale , 0 , 2*Math.PI);
 				context.fillStyle = "rgba(50,50,50,"+ scale +")";
-				context.fill()
+				context.fill();
 				context.restore();
 			}
 		}

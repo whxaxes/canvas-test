@@ -15,6 +15,7 @@
 </head>
     <body style="background:#000">
 	<canvas id="cas" width="990" height="540"></canvas>
+	<input type="file" id="musicFile"/>
 	<button id="start">开始</button>
 	<button id="stop">暂停</button>
 	<script type="text/javascript" charset="utf-8">
@@ -25,9 +26,16 @@
 		})();
 		
 		var AC = new AudioContext();
-		
-		loadSound('../planGame/mp3/bgm.mp3' , function(){
-			decodeBuffer(musicBuffer)
+		var userselect = false;
+		document.getElementById('musicFile').onchange = function(){
+			if(this.files.length!==0){
+				userselect = true;
+				changeBuffer(this.files[0]);
+			}
+		};
+
+		loadSound('music.mp3' , function(){
+			if(!userselect)decodeBuffer(musicBuffer)
 		});
 		
 		function loadSound(url , callback){
@@ -39,7 +47,7 @@
 			
 			var xhr = new XMLHttpRequest();
 			xhr.open('get' , url);
-			xhr.responseType = "arraybuffer"
+			xhr.responseType = "arraybuffer";
 			xhr.onload = function(){
 				musicBuffer = xhr.response
 				callback()
@@ -52,54 +60,58 @@
 				playMusic(buffer)
 				initAnimation()
 			}, function(e){
-				console.log(e)
 				alert("文件解码失败")
 			})
 		}
-		
+
 		function changeBuffer(file){
 			var fr = new FileReader();
 			fr.onload = function(e){
-				var fileResult = e.target.result;
-				AC.decodeAudioData(fileResult , function(buffer){
-					playMusic(buffer)
+				AC.decodeAudioData(e.target.result , function(buffer){
+					myBuffer = buffer;
+					absn.stop();
 				}, function(e){
-					console.log(e)
 					alert("文件解码失败")
 				})
-			}
+			};
 			fr.readAsArrayBuffer(file);
 		}
-		
+
 		var analyser;
 		var starttime = 0;
 		var bftime = 0;
 		var isstart = false;
 		var absn,myBuffer;
 		function playMusic(buffer,second){
+			if(absn)absn.stop();
 			absn = AC.createBufferSource();
 			analyser = AC.createAnalyser();
 			absn.connect(analyser);
 			absn.connect(AC.destination);
-			absn.buffer = buffer;
-            absn.loop = true;
+			absn.buffer = myBuffer = buffer;
 			isstart = true;
-			myBuffer = buffer;
 			absn.start(0 , second||0);
 			starttime = new Date();
+
+			absn.onended = function(){
+				absn.onended = null;
+				if(!isstart) return;
+
+				playMusic(myBuffer)
+			}
 		}
 		
 		document.getElementById("start").onclick = function(){
 			if(isstart) return;
 			playMusic(myBuffer , bftime)
-		}
+		};
 		
 		document.getElementById("stop").onclick = function(){
 			if(!isstart) return;
 			absn.stop()
 			bftime += (new Date()-starttime)/1000;
 			isstart = false;
-		}
+		};
 		
 		var tgs = [],tgn = 35,jg = 4,ot = 0,outcanvas = null;
 		var grd=ctx.createLinearGradient(0,110,0,270);
@@ -116,7 +128,7 @@
 			for(var i=0;i<tgn;i++){
 				tgs.push(new retangle(w , 5 , (i*(array.length/tgn)) , canvas.height/2))
 			}
-			ot = new Date()
+			ot = new Date();
 			animate()
 		}
 		
@@ -139,13 +151,13 @@
 			for(var i=0;i<imgdata.data.length;i+=4){
 				imgdata.data[i+3] = 50;
 			}
-			outctx.putImageData(imgdata , 0 , 0)
-			ctx.save()
+			outctx.putImageData(imgdata , 0 , 0);
+			ctx.save();
 			ctx.translate(canvas.width/2,canvas.height/2);
-			ctx.rotate(Math.PI)
-			ctx.scale(-1,1)
+			ctx.rotate(Math.PI);
+			ctx.scale(-1,1);
 			ctx.drawImage(outcanvas , -canvas.width/2 , -canvas.height/2)
-			ctx.restore()
+			ctx.restore();
 		}
 		
 		var retangle = function(w,h,x,y){
