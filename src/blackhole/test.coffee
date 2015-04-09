@@ -72,7 +72,7 @@ class Particle
     bufferCtx.stroke()
     bufferCtx.restore();
 
-
+#黑洞类
 class BlackHole
   constructor: (options)->
     {@x , @y , @r , @power} = options;
@@ -100,12 +100,13 @@ class BlackHole
     cx = Math.abs(bh.x-@x)
     cy = Math.abs(bh.y-@y)
     cr = bh.ir + @ir
+
     if cx<cr && cy<cr && Math.sqrt(cx*cx + cy*cy) < cr
       nbh = new BlackHole({
         x:(bh.x+@x)/2,
         y:(bh.y+@y)/2,
-        r:Math.max(bh.r , @r)*1.2,
-        power:Math.max(bh.power , @power)*1.2
+        r: ~~Math.sqrt(bh.r*bh.r + @r*@r),
+        power:bh.power+@power
       })
       nbh.animate(Math.max(bh.r , @r))
 
@@ -154,7 +155,9 @@ canvas.onmousedown = (e)->
   if !target && e.button==0
     blackholes.push(new BlackHole(x:x,y:y,r:BH_SIZE,power:2))
   else if e.button==2
-      blackholes.splice(i , 1);
+      bh.destory = true;
+      bh.animate(bh.r)
+      bh.r += 5
 
 canvas.onmousemove = (e)->
   if target
@@ -172,10 +175,9 @@ execAnimate = ->
   for i in [1...200]
     colors = (parseInt(Math.random()*125 + 130) for n in [0...3])
     particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(#{colors[0]},#{colors[1]},#{colors[2]},1)"))
-
   animate();
 
-#动画逻辑
+#动画逐帧逻辑
 animate = ->
   bufferCtx.save();
   bufferCtx.globalCompositeOperation = 'destination-out';

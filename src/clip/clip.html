@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=0;">
-	<title>Document</title>
+	<title>橡皮擦效果</title>
 	<style type="text/css">
 		body{
 			margin:0;
@@ -15,7 +15,7 @@
 			top:0;
 			bottom:0;
 			right: 0;
-			background:url("http://1.datalib.sinaapp.com/staticDemo/clip/girl1.jpg") no-repeat;
+			background:url("girl1.jpg") no-repeat;
 			background-size: 100% 100%;
 			backface-visibility: hidden;
 			overflow: hidden;
@@ -45,7 +45,7 @@
 		canvas.width = document.getElementById("bb").clientWidth;
 		canvas.height = document.getElementById("bb").clientHeight;
 		var img = new Image();
-		img.src = "http://1.datalib.sinaapp.com/staticDemo/clip/girl2.jpg";
+		img.src = "girl2.jpg";
 		img.onload = function(){
 			ctx.drawImage(img,0,0,canvas.width,canvas.height)
 			//ctx.fillRect(0,0,canvas.width,canvas)

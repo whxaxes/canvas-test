@@ -7,7 +7,7 @@
 		.city{width:100%;position:fixed;bottom: 0px;z-index: 100;}
 		.city img{width: 100%;}
 	</style>
-	<title>放烟花</title>
+	<title>放烟花模拟</title>
 </head>
 <body onselectstart = "return false">
 	<canvas id='cas' style="background-color:rgba(0,5,24,1)">浏览器不支持canvas</canvas>
@@ -50,10 +50,10 @@
 		var lastTime;
 		function animate(){
 			ctx.save();
-			ctx.fillStyle = "rgba(0,5,24,0.1)";
-			ctx.fillRect(0,0,canvas.width,canvas.height);
+			ctx.globalCompositeOperation = 'destination-out';
+			ctx.globalAlpha = 0.1;
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			ctx.restore();
-
 
 			var newTime = new Date();
             if(newTime-lastTime>200+(window.innerHeight-767)/2){

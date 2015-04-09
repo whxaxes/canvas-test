@@ -134,8 +134,8 @@
         nbh = new BlackHole({
           x: (bh.x + this.x) / 2,
           y: (bh.y + this.y) / 2,
-          r: Math.max(bh.r, this.r) * 1.2,
-          power: Math.max(bh.power, this.power) * 1.2
+          r: ~~Math.sqrt(bh.r * bh.r + this.r * this.r),
+          power: bh.power + this.power
         });
         nbh.animate(Math.max(bh.r, this.r));
         if (nbh.r > 100) {
@@ -197,7 +197,9 @@
         power: 2
       }));
     } else if (e.button === 2) {
-      return blackholes.splice(i, 1);
+      bh.destory = true;
+      bh.animate(bh.r);
+      return bh.r += 5;
     }
   };
 
