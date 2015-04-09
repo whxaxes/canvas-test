@@ -42,14 +42,14 @@
 			ctx.fillStyle = "#FFF";
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
-			ctx.font = "20px 微软雅黑"
-			ctx.fillText("音频下载中，请耐心等待..." , canvas.width/2 , canvas.height/2)
+			ctx.font = "20px 微软雅黑";
+			ctx.fillText("音频下载中...也可以点击选择文件听自己的歌" , canvas.width/2 , canvas.height/2);
 			
 			var xhr = new XMLHttpRequest();
 			xhr.open('get' , url);
 			xhr.responseType = "arraybuffer";
 			xhr.onload = function(){
-				musicBuffer = xhr.response
+				musicBuffer = xhr.response;
 				callback()
 			};
 			xhr.send();
