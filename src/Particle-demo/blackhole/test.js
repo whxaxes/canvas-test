@@ -101,8 +101,15 @@
       this.animate(0);
     }
 
-    BlackHole.prototype.draw = function(ctx) {
+    BlackHole.prototype.drawLight = function(ctx) {
       var imgr;
+      imgr = this.ir * 1.4;
+      return ctx.drawImage(bhImage, this.x - imgr, this.y - imgr, imgr * 2, imgr * 2);
+    };
+
+    BlackHole.prototype.draw = function(ctx) {
+      var that;
+      that = this;
       if (this.isAdd) {
         if ((this.ir += this.step) > (this.r + this.bigger)) {
           this.isAdd = false;
@@ -113,8 +120,10 @@
           blackholes.splice(blackholes.indexOf(this), 1);
         }
       }
-      imgr = this.ir + bhImage.lightLen;
-      return ctx.drawImage(bhImage, this.x - imgr, this.y - imgr, imgr * 2, imgr * 2);
+      ctx.beginPath();
+      ctx.fillStyle = "#000";
+      ctx.arc(that.x, that.y, that.ir, 0, Math.PI * 2);
+      return ctx.fill();
     };
 
     BlackHole.prototype.animate = function(ir) {
@@ -122,29 +131,41 @@
       return this.isAdd = true;
     };
 
+    BlackHole.prototype.attract = function(bh) {
+      var angle, cx, cy, lax, lay, power;
+      cx = bh.x - this.x;
+      cy = bh.y - this.y;
+      angle = Math.atan(cx / cy);
+      power = (bh.r / this.r) * 0.1;
+      lax = Math.abs(power * Math.sin(angle));
+      lay = Math.abs(power * Math.cos(angle));
+      this.x += cx > 0 ? lax : -lax;
+      return this.y += cy > 0 ? lay : -lay;
+    };
+
     BlackHole.prototype.check = function(bh) {
-      var cr, cx, cy, nbh;
+      var cr, cx, cy, lbh, nbh, ref, ref1;
       if (!bh || !(bh instanceof BlackHole) || this.destory || bh.destory) {
         return false;
       }
-      cx = Math.abs(bh.x - this.x);
-      cy = Math.abs(bh.y - this.y);
+      cx = bh.x - this.x;
+      cy = bh.y - this.y;
       cr = bh.ir + this.ir;
-      if (cx < cr && cy < cr && Math.sqrt(cx * cx + cy * cy) < cr) {
-        nbh = new BlackHole({
-          x: (bh.x + this.x) / 2,
-          y: (bh.y + this.y) / 2,
-          r: ~~Math.sqrt(bh.r * bh.r + this.r * this.r),
-          power: bh.power + this.power
-        });
-        nbh.animate(Math.max(bh.r, this.r));
-        if (nbh.r > 100) {
-          this.destory = true;
+      cx = Math.abs(cx);
+      cy = Math.abs(cy);
+      if (cx < cr && cy < cr && Math.sqrt(cx * cx + cy * cy) < cr - 2) {
+        if (bh.r > this.r) {
+          ref = [bh, this], nbh = ref[0], lbh = ref[1];
+        } else {
+          ref1 = [this, bh], nbh = ref1[0], lbh = ref1[1];
         }
-        blackholes.splice(blackholes.indexOf(this), 1);
-        blackholes.splice(blackholes.indexOf(bh), 1);
-        blackholes.push(nbh);
-        return true;
+        nbh.r = ~~Math.sqrt(bh.r * bh.r + this.r * this.r);
+        nbh.power = bh.power + this.power;
+        nbh.animate(Math.max(bh.r, this.r));
+        if (nbh.r > 50) {
+          nbh.destory = true;
+        }
+        return lbh;
       }
       return false;
     };
@@ -154,23 +175,18 @@
   })();
 
   bhImage = (function() {
-    var bhCas, bhCtx, i, k, lightLen, opacity;
+    var bhCas, bhCtx, i, k, opacity;
     bhCas = document.createElement("canvas");
-    bhCas.lightLen = lightLen = 5;
-    bhCas.width = bhCas.height = (BH_SIZE + lightLen) * 2;
+    bhCas.width = bhCas.height = 50;
     bhCtx = bhCas.getContext("2d");
     opacity = 0;
     for (i = k = 0; k < 20; i = ++k) {
       opacity += 0.05;
       bhCtx.beginPath();
       bhCtx.fillStyle = "rgba(188,186,187," + opacity + ")";
-      bhCtx.arc(bhCas.width / 2, bhCas.height / 2, BH_SIZE + lightLen - i, 0, Math.PI * 2);
+      bhCtx.arc(bhCas.width / 2, bhCas.height / 2, 25 - i, 0, Math.PI * 2);
       bhCtx.fill();
     }
-    bhCtx.beginPath();
-    bhCtx.fillStyle = "#000";
-    bhCtx.arc(bhCas.width / 2, bhCas.height / 2, BH_SIZE, 0, Math.PI * 2);
-    bhCtx.fill();
     return bhCas;
   })();
 
@@ -219,7 +235,7 @@
 
   execAnimate = function() {
     var colors, i, k, n;
-    for (i = k = 1; k < 200; i = ++k) {
+    for (i = k = 1; k < 300; i = ++k) {
       colors = (function() {
         var l, results;
         results = [];
@@ -239,7 +255,7 @@
   };
 
   animate = function() {
-    var bh, i, j, k, l, len, len1, m, p, ref, ref1;
+    var bh, bh2, deleArray, delebh, i, j, k, l, len, len1, len2, len3, len4, m, o, p, q;
     bufferCtx.save();
     bufferCtx.globalCompositeOperation = 'destination-out';
     bufferCtx.globalAlpha = 0.3;
@@ -248,17 +264,33 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (i = k = 0, len = blackholes.length; k < len; i = ++k) {
       bh = blackholes[i];
-      for (j = l = ref = i + 1, ref1 = blackholes.length; ref <= ref1 ? l < ref1 : l > ref1; j = ref <= ref1 ? ++l : --l) {
-        if (bh && bh.check(blackholes[j])) {
-          break;
+      if (bh) {
+        bh.drawLight(ctx);
+      }
+    }
+    deleArray = [];
+    for (i = l = 0, len1 = blackholes.length; l < len1; i = ++l) {
+      bh = blackholes[i];
+      for (j = m = 0, len2 = blackholes.length; m < len2; j = ++m) {
+        bh2 = blackholes[j];
+        if (!bh || !bh2 || bh === bh2) {
+          continue;
+        }
+        bh.attract(bh2);
+        if (j > i && (delebh = bh.check(bh2))) {
+          deleArray.push(delebh);
         }
       }
       if (bh) {
         bh.draw(ctx);
       }
     }
-    for (m = 0, len1 = particles.length; m < len1; m++) {
-      p = particles[m];
+    for (o = 0, len3 = deleArray.length; o < len3; o++) {
+      delebh = deleArray[o];
+      blackholes.splice(blackholes.indexOf(delebh), 1);
+    }
+    for (q = 0, len4 = particles.length; q < len4; q++) {
+      p = particles[q];
       p.attract();
       p.move();
       p.draw();

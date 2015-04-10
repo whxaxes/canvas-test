@@ -80,7 +80,14 @@ class BlackHole
     @bigger = 5;
     this.animate(0);
 
+#    绘制光
+  drawLight:(ctx)->
+    imgr = @ir*1.4;
+    ctx.drawImage(bhImage , @x-imgr , @y-imgr , imgr*2 , imgr*2)
+
+#    绘制黑洞
   draw:(ctx)->
+    that = this;
     if @isAdd
       if (@ir+=@step)>(@r+@bigger)
         @isAdd = false
@@ -88,42 +95,55 @@ class BlackHole
       @ir = if @ir<=@r then @r else @ir-@step
       if this.destory && @ir == @r then blackholes.splice(blackholes.indexOf(this) , 1)
 
-    imgr = @ir+bhImage.lightLen;
-    ctx.drawImage(bhImage , @x-imgr , @y-imgr , imgr*2 , imgr*2)
+    ctx.beginPath();
+    ctx.fillStyle = "#000"
+    ctx.arc(that.x, that.y, that.ir, 0, Math.PI * 2)
+    ctx.fill()
 
   animate:(ir)->
     @ir = ir;
     @isAdd = true;
 
+  attract:(bh)->
+    cx = bh.x-@x
+    cy = bh.y-@y
+    angle = Math.atan(cx/cy)
+    power = (bh.r/@r) * 0.1;
+    lax = Math.abs(power*Math.sin(angle));
+    lay = Math.abs(power*Math.cos(angle));
+
+    @x += if cx>0 then lax else -lax;
+    @y += if cy>0 then lay else -lay;
+
   check:(bh)->
     if !bh || !(bh instanceof BlackHole) || this.destory || bh.destory then return false;
-    cx = Math.abs(bh.x-@x)
-    cy = Math.abs(bh.y-@y)
+    cx = bh.x-@x
+    cy = bh.y-@y
     cr = bh.ir + @ir
 
-    if cx<cr && cy<cr && Math.sqrt(cx*cx + cy*cy) < cr
-      nbh = new BlackHole({
-        x:(bh.x+@x)/2,
-        y:(bh.y+@y)/2,
-        r: ~~Math.sqrt(bh.r*bh.r + @r*@r),
-        power:bh.power+@power
-      })
+    cx = Math.abs(cx);
+    cy = Math.abs(cy);
+
+    if cx<cr && cy<cr && Math.sqrt(cx*cx + cy*cy) < cr-2
+      if bh.r>@r
+        [nbh , lbh] = [bh , this]
+      else
+        [nbh , lbh] = [this , bh]
+
+      nbh.r = ~~Math.sqrt(bh.r*bh.r + @r*@r);
+      nbh.power = bh.power+@power
       nbh.animate(Math.max(bh.r , @r))
 
-      if nbh.r > 100 then @destory=true
+      if nbh.r > 50 then nbh.destory=true
 
-      blackholes.splice(blackholes.indexOf(this) , 1);
-      blackholes.splice(blackholes.indexOf(bh) , 1);
-      blackholes.push(nbh);
-      return true;
+      return lbh;
 
     return false;
 
 #预渲染黑洞图片
 bhImage = do->
   bhCas = document.createElement("canvas");
-  bhCas.lightLen =  lightLen = 5;
-  bhCas.width = bhCas.height = (BH_SIZE+lightLen)*2
+  bhCas.width = bhCas.height = 50
   bhCtx = bhCas.getContext("2d");
 
   opacity = 0;
@@ -131,13 +151,9 @@ bhImage = do->
     opacity += 0.05;
     bhCtx.beginPath();
     bhCtx.fillStyle = "rgba(188,186,187,#{opacity})"
-    bhCtx.arc(bhCas.width/2, bhCas.height/2, BH_SIZE+lightLen-i, 0, Math.PI * 2)
+    bhCtx.arc(bhCas.width/2, bhCas.height/2, 25-i, 0, Math.PI * 2)
     bhCtx.fill()
 
-  bhCtx.beginPath();
-  bhCtx.fillStyle = "#000"
-  bhCtx.arc(bhCas.width/2, bhCas.height/2, BH_SIZE, 0, Math.PI * 2)
-  bhCtx.fill()
   return bhCas
 
 #事件绑定
@@ -172,7 +188,7 @@ canvas.onmouseup = canvas.onmouseout = (e)->
 
 #执行动画
 execAnimate = ->
-  for i in [1...200]
+  for i in [1...300]
     colors = (parseInt(Math.random()*125 + 130) for n in [0...3])
     particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(#{colors[0]},#{colors[1]},#{colors[2]},1)"))
   animate();
@@ -187,10 +203,25 @@ animate = ->
 
   ctx.clearRect(0,0,canvas.width , canvas.height);
 
+#  先画出所有黑洞的光
   for bh,i in blackholes
-    for j in [i+1...blackholes.length]
-      if bh and bh.check(blackholes[j]) then break
+    if bh then bh.drawLight(ctx)
+
+#  再画黑洞
+  deleArray = []; #存放要删除的黑洞对象
+  for bh,i in blackholes
+    for bh2,j in blackholes
+      if !bh or !bh2 or bh is bh2 then continue;
+
+      bh.attract(bh2) #黑洞互相吸引
+
+      if j>i && delebh = bh.check(bh2) #检查碰撞，若有碰撞则返回被吞噬的黑洞对象
+        deleArray.push(delebh)
+
     if bh then bh.draw(ctx)
+
+  #删除发生碰撞的黑洞，添加新生成的黑洞
+  blackholes.splice(blackholes.indexOf(delebh) , 1) for delebh in deleArray
 
   for p in particles
     p.attract()
