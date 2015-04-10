@@ -108,7 +108,7 @@ class BlackHole
     cx = bh.x-@x
     cy = bh.y-@y
     jl = Math.sqrt(cx*cx + cy*cy);
-    power = (bh.r/@r) * 0.1;
+    power = (bh.r/@r) * 10/jl + 0.5;
     lax = Math.abs(power*cx/jl);
     lay = Math.abs(power*cy/jl);
 
@@ -124,7 +124,7 @@ class BlackHole
     cx = Math.abs(cx);
     cy = Math.abs(cy);
 
-    if cx<cr && cy<cr && Math.sqrt(cx*cx + cy*cy) < cr-2
+    if cx<cr && cy<cr && Math.sqrt(cx*cx + cy*cy) <= Math.abs(bh.r-@r)+3
       if bh.r>@r
         [nbh , lbh] = [bh , this]
       else
@@ -135,7 +135,6 @@ class BlackHole
       nbh.animate(Math.max(bh.r , @r))
 
       if nbh.r > 50 then nbh.destory=true
-
       return lbh;
 
     return false;
@@ -210,6 +209,7 @@ animate = ->
 #  再画黑洞
   deleArray = []; #存放要删除的黑洞对象
   for bh,i in blackholes
+    if bh then bh.draw(ctx)
     for bh2,j in blackholes
       if !bh or !bh2 or bh is bh2 then continue;
 
@@ -217,8 +217,6 @@ animate = ->
 
       if j>i && delebh = bh.check(bh2) #检查碰撞，若有碰撞则返回被吞噬的黑洞对象
         deleArray.push(delebh)
-
-    if bh then bh.draw(ctx)
 
   #删除发生碰撞的黑洞，添加新生成的黑洞
   blackholes.splice(blackholes.indexOf(delebh) , 1) for delebh in deleArray

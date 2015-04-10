@@ -136,7 +136,7 @@
       cx = bh.x - this.x;
       cy = bh.y - this.y;
       jl = Math.sqrt(cx * cx + cy * cy);
-      power = (bh.r / this.r) * 0.1;
+      power = (bh.r / this.r) * 10 / jl + 0.5;
       lax = Math.abs(power * cx / jl);
       lay = Math.abs(power * cy / jl);
       this.x += cx > 0 ? lax : -lax;
@@ -153,7 +153,7 @@
       cr = bh.ir + this.ir;
       cx = Math.abs(cx);
       cy = Math.abs(cy);
-      if (cx < cr && cy < cr && Math.sqrt(cx * cx + cy * cy) < cr - 2) {
+      if (cx < cr && cy < cr && Math.sqrt(cx * cx + cy * cy) <= Math.abs(bh.r - this.r) + 3) {
         if (bh.r > this.r) {
           ref = [bh, this], nbh = ref[0], lbh = ref[1];
         } else {
@@ -271,6 +271,9 @@
     deleArray = [];
     for (i = l = 0, len1 = blackholes.length; l < len1; i = ++l) {
       bh = blackholes[i];
+      if (bh) {
+        bh.draw(ctx);
+      }
       for (j = m = 0, len2 = blackholes.length; m < len2; j = ++m) {
         bh2 = blackholes[j];
         if (!bh || !bh2 || bh === bh2) {
@@ -280,9 +283,6 @@
         if (j > i && (delebh = bh.check(bh2))) {
           deleArray.push(delebh);
         }
-      }
-      if (bh) {
-        bh.draw(ctx);
       }
     }
     for (o = 0, len3 = deleArray.length; o < len3; o++) {
