@@ -133,14 +133,16 @@
 
     BlackHole.prototype.attract = function(bh) {
       var cx, cy, jl, lax, lay, power;
-      cx = bh.x - this.x;
-      cy = bh.y - this.y;
-      jl = Math.sqrt(cx * cx + cy * cy);
-      power = (bh.r / this.r) * 10 / jl + 0.5;
-      lax = Math.abs(power * cx / jl);
-      lay = Math.abs(power * cy / jl);
-      this.x += cx > 0 ? lax : -lax;
-      return this.y += cy > 0 ? lay : -lay;
+      if (bh.r >= this.r) {
+        cx = bh.x - this.x;
+        cy = bh.y - this.y;
+        jl = Math.sqrt(cx * cx + cy * cy);
+        power = (bh.r / this.r) * 10 / jl + 0.5;
+        lax = Math.abs(power * cx / jl);
+        lay = Math.abs(power * cy / jl);
+        this.x += cx > 0 ? lax : -lax;
+        return this.y += cy > 0 ? lay : -lay;
+      }
     };
 
     BlackHole.prototype.check = function(bh) {

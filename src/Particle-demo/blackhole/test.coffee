@@ -105,15 +105,15 @@ class BlackHole
     @isAdd = true;
 
   attract:(bh)->
-    cx = bh.x-@x
-    cy = bh.y-@y
-    jl = Math.sqrt(cx*cx + cy*cy);
-    power = (bh.r/@r) * 10/jl + 0.5;
-    lax = Math.abs(power*cx/jl);
-    lay = Math.abs(power*cy/jl);
-
-    @x += if cx>0 then lax else -lax;
-    @y += if cy>0 then lay else -lay;
+    if bh.r >= @r
+      cx = bh.x-@x
+      cy = bh.y-@y
+      jl = Math.sqrt(cx*cx + cy*cy);
+      power = (bh.r/@r) * 10/jl + 0.5;
+      lax = Math.abs(power*cx/jl);
+      lay = Math.abs(power*cy/jl);
+      @x += if cx>0 then lax else -lax;
+      @y += if cy>0 then lay else -lay;
 
   check:(bh)->
     if !bh || !(bh instanceof BlackHole) || this.destory || bh.destory then return false;
