@@ -44,8 +44,8 @@ class Particle
     @x += @vx;
     @y += @vy;
 
-    @vx = if 0 < @x < canvas.width+@r*2 then @vx else -@vx;
-    @vy = if 0 < @y < canvas.height+@r*2 then @vy else -@vy;
+    @vx = if 0 < @x < canvas.width+@r*2 then @vx else -@vx*0.98;
+    @vy = if 0 < @y < canvas.height+@r*2 then @vy else -@vy*0.98;
 
   attract:->
     @ax = @ay = 0;
@@ -82,12 +82,6 @@ class BlackHole
 
 #    绘制光
   drawLight:(ctx)->
-    imgr = @ir*1.4;
-    ctx.drawImage(bhImage , @x-imgr , @y-imgr , imgr*2 , imgr*2)
-
-#    绘制黑洞
-  draw:(ctx)->
-    that = this;
     if @isAdd
       if (@ir+=@step)>(@r+@bigger)
         @isAdd = false
@@ -95,6 +89,12 @@ class BlackHole
       @ir = if @ir<=@r then @r else @ir-@step
       if this.destory && @ir == @r then blackholes.splice(blackholes.indexOf(this) , 1)
 
+    imgr = @ir*1.4;
+    ctx.drawImage(bhImage , @x-imgr , @y-imgr , imgr*2 , imgr*2)
+
+#    绘制黑洞
+  draw:(ctx)->
+    that = this;
     ctx.beginPath();
     ctx.fillStyle = "#000"
     ctx.arc(that.x, that.y, that.ir, 0, Math.PI * 2)
@@ -107,10 +107,10 @@ class BlackHole
   attract:(bh)->
     cx = bh.x-@x
     cy = bh.y-@y
-    angle = Math.atan(cx/cy)
+    jl = Math.sqrt(cx*cx + cy*cy);
     power = (bh.r/@r) * 0.1;
-    lax = Math.abs(power*Math.sin(angle));
-    lay = Math.abs(power*Math.cos(angle));
+    lax = Math.abs(power*cx/jl);
+    lay = Math.abs(power*cy/jl);
 
     @x += if cx>0 then lax else -lax;
     @y += if cy>0 then lay else -lay;

@@ -55,8 +55,8 @@
       this.oldy = this.y;
       this.x += this.vx;
       this.y += this.vy;
-      this.vx = (0 < (ref = this.x) && ref < canvas.width + this.r * 2) ? this.vx : -this.vx;
-      return this.vy = (0 < (ref1 = this.y) && ref1 < canvas.height + this.r * 2) ? this.vy : -this.vy;
+      this.vx = (0 < (ref = this.x) && ref < canvas.width + this.r * 2) ? this.vx : -this.vx * 0.98;
+      return this.vy = (0 < (ref1 = this.y) && ref1 < canvas.height + this.r * 2) ? this.vy : -this.vy * 0.98;
     };
 
     Particle.prototype.attract = function() {
@@ -103,13 +103,6 @@
 
     BlackHole.prototype.drawLight = function(ctx) {
       var imgr;
-      imgr = this.ir * 1.4;
-      return ctx.drawImage(bhImage, this.x - imgr, this.y - imgr, imgr * 2, imgr * 2);
-    };
-
-    BlackHole.prototype.draw = function(ctx) {
-      var that;
-      that = this;
       if (this.isAdd) {
         if ((this.ir += this.step) > (this.r + this.bigger)) {
           this.isAdd = false;
@@ -120,6 +113,13 @@
           blackholes.splice(blackholes.indexOf(this), 1);
         }
       }
+      imgr = this.ir * 1.4;
+      return ctx.drawImage(bhImage, this.x - imgr, this.y - imgr, imgr * 2, imgr * 2);
+    };
+
+    BlackHole.prototype.draw = function(ctx) {
+      var that;
+      that = this;
       ctx.beginPath();
       ctx.fillStyle = "#000";
       ctx.arc(that.x, that.y, that.ir, 0, Math.PI * 2);
@@ -132,13 +132,13 @@
     };
 
     BlackHole.prototype.attract = function(bh) {
-      var angle, cx, cy, lax, lay, power;
+      var cx, cy, jl, lax, lay, power;
       cx = bh.x - this.x;
       cy = bh.y - this.y;
-      angle = Math.atan(cx / cy);
+      jl = Math.sqrt(cx * cx + cy * cy);
       power = (bh.r / this.r) * 0.1;
-      lax = Math.abs(power * Math.sin(angle));
-      lay = Math.abs(power * Math.cos(angle));
+      lax = Math.abs(power * cx / jl);
+      lay = Math.abs(power * cy / jl);
       this.x += cx > 0 ? lax : -lax;
       return this.y += cy > 0 ? lay : -lay;
     };
