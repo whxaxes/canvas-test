@@ -16,10 +16,11 @@
     <body style="background:#000">
 	<canvas id="cas" width="990" height="540"></canvas>
 	<input type="file" id="musicFile"/>
+	<audio src="music.mp3" autoplay id="music"></audio>
 	<button id="start">开始</button>
 	<button id="stop">暂停</button>
 	<script type="text/javascript" charset="utf-8">
-		var canvas = document.getElementById("cas"),ctx=canvas.getContext("2d"),musicBuffer = null;
+		var canvas = document.getElementById("cas"),ctx=canvas.getContext("2d");
 		window.AudioContext= window.AudioContext||window.webkitAudioContext||window.mozAudioContext;
 		window.RAF =  (function(){
 			return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
@@ -34,10 +35,10 @@
 			}
 		};
 
-		loadSound('music.mp3' , function(){
-			if(!userselect)decodeBuffer(musicBuffer)
+		loadSound('music.mp3' , function(buffer){
+			if(!userselect) decodeBuffer(buffer)
 		});
-		
+
 		function loadSound(url , callback){
 			ctx.fillStyle = "#FFF";
 			ctx.textAlign = "center";
@@ -49,8 +50,7 @@
 			xhr.open('get' , url);
 			xhr.responseType = "arraybuffer";
 			xhr.onload = function(){
-				musicBuffer = xhr.response;
-				callback()
+				callback(xhr.response)
 			};
 			xhr.send();
 		}
@@ -118,6 +118,7 @@
 			grd.addColorStop(0,"red");
 			grd.addColorStop(0.3,"yellow");
 			grd.addColorStop(1,"#00E800");
+
 		function initAnimation(){
 			outcanvas = document.createElement("canvas");
 			outcanvas.width = canvas.width;
@@ -131,7 +132,7 @@
 			ot = new Date();
 			animate()
 		}
-		
+
 		function animate(){
 			var array = new Uint8Array(analyser.frequencyBinCount);
 			analyser.getByteFrequencyData(array);
