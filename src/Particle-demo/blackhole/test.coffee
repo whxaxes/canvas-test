@@ -109,7 +109,7 @@ class BlackHole
       cx = bh.x-@x
       cy = bh.y-@y
       jl = Math.sqrt(cx*cx + cy*cy);
-      power = (bh.r/@r) * 10/jl + 0.5;
+      power = (bh.r-@r) * 10/jl + 0.5;
       lax = Math.abs(power*cx/jl);
       lay = Math.abs(power*cy/jl);
       @x += if cx>0 then lax else -lax;

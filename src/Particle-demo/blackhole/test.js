@@ -137,7 +137,7 @@
         cx = bh.x - this.x;
         cy = bh.y - this.y;
         jl = Math.sqrt(cx * cx + cy * cy);
-        power = (bh.r / this.r) * 10 / jl + 0.5;
+        power = (bh.r - this.r) * 10 / jl + 0.5;
         lax = Math.abs(power * cx / jl);
         lay = Math.abs(power * cy / jl);
         this.x += cx > 0 ? lax : -lax;
