@@ -10,6 +10,7 @@
 			left:0;top:0;bottom: 0;right: 0;
 			margin: auto;
 			background:#000;
+			z-index: -1;
 		}
 		#mp3{visibility: hidden;}
 	</style>
@@ -18,11 +19,14 @@
 
 	<canvas id="cas" width="990" height="540"></canvas>
 
-	<audio src="music.mp3" preload autoplay loop='loop' id="mp3"></audio>
-
+	<audio preload autoplay id="mp3"></audio>
+	
+	<button id="author">听作者的歌</button>
 	<input type="file" id="musicFile"/>  也可以自行选择自己的音乐
 
 	<script type="text/javascript" charset="utf-8">
+		var musics = ['music.mp3','music2.mp3'];
+
 		var canvas = document.getElementById("cas"),
 			ctx = canvas.getContext("2d");
 
@@ -41,8 +45,8 @@
 		grd.addColorStop(1, "#00E800");
 
 		// analyser为analysernode，具有频率的数据，用于创建数据可视化
-		// source 为音频源，可能为audio源也可能为buffer源
-		var analyser, source;
+		// audioSource 为音频源，bufferSource为buffer源
+		var analyser, audioSource , bufferSource;
 
 		//实例化音频对象
 		var AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
@@ -60,7 +64,22 @@
 		audio.onended = function(){
 			audio.play();
 		}
-		playMusic(audio);
+		chooseMusic();
+
+		document.getElementById("author").onclick = function(){
+			chooseMusic();
+		}
+
+		function chooseMusic(){
+			if(bufferSource){
+				bufferSource.disconnect(analyser);
+				bufferSource.disconnect(AC.destination);
+			}
+
+			audio.src = musics[~~(Math.random()*musics.length)];
+			audio.load();
+			playMusic(audio);
+		}
 
 		//在下一次事件循环中执行动画
 		setTimeout(function(){
@@ -69,8 +88,16 @@
 
 		//如果用户选取了自己的音乐则通过filereader读取
 		document.getElementById('musicFile').onchange = function() {
+			if(this.files.length == 0)return;
+
 			if (!audio.ended || !audio.paused) audio.pause();
-			if ('stop' in source) source.stop();
+
+			if (bufferSource && ('stop' in bufferSource)) bufferSource.stop();
+
+			if(audioSource){
+				audioSource.disconnect(analyser);
+				audioSource.disconnect(AC.destination);
+			}
 
 			paintStop = true;
 
@@ -104,16 +131,20 @@
 
 		//音频播放
 		function playMusic(arg) {
+			var source;
 			//如果arg是audio的dom对象，则转为相应的源
 			if(arg.nodeType){
-				source = AC.createMediaElementSource(arg);
+				audioSource = audioSource || AC.createMediaElementSource(arg);
+				source = audioSource;
 			}else {
-				source = AC.createBufferSource();
+				bufferSource = AC.createBufferSource();
 
-				source.buffer = arg;
+				bufferSource.buffer = arg;
 
 				//播放音频
-				setTimeout(function(){source.start()}, 0);
+				setTimeout(function(){bufferSource.start()}, 0);
+
+				source = bufferSource;
 			}
 
 			analyser = analyser || AC.createAnalyser();
