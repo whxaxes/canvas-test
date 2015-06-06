@@ -17,7 +17,7 @@
 </head>
 <body style="background:#000">
 
-	<canvas id="cas" width="1200" height="540"></canvas>
+	<canvas id="cas" width="900" height="540"></canvas>
 
 	<audio preload autoplay id="mp3"></audio>
 	
@@ -148,7 +148,7 @@
 
 			//绘制音谱的参数
 			var rt_array = [],	//用于存储柱形条对象
-				rt_length = 35,		//规定有多少个柱形条
+				rt_length = 30,		//规定有多少个柱形条
 				outcanvas = null;
 
 			var grd = ctx.createLinearGradient(0, 110, 0, 270);
@@ -194,7 +194,7 @@
 					copy();
 				}
 				
-				RAF(animate)
+				RAF(animate);
 			}
 
 			//制造半透明投影
