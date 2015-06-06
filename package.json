@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-html-index":"*"
+    "grunt-html-index": "*"
+  },
+  "dependencies": {
+    "easy-router": "^2.0.0"
   }
 }
