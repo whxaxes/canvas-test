@@ -10,7 +10,6 @@ canvas or other demo
 [canvas 3D](http://whxaxes.github.io/canvas-test/src/3D-demo/3Dcubes_2.html)<br>
 [飞机大战游戏](http://whxaxes.github.io/canvas-test/src/Game-demo/planGame/index.html)<br>
 [粒子效果](http://whxaxes.github.io/canvas-test/src/Particle-demo/orangutan/index.html)<br>
-
-###...
+...
 
 所有DEMO：[http://whxaxes.github.io/canvas-test/menu.html](http://whxaxes.github.io/canvas-test/menu.html)<br />
