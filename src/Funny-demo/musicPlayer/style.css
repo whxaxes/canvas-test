@@ -1,0 +1,102 @@
+@charset "utf-8";
+
+*{margin: 0;padding: 0;}
+input , button{outline: none;border-width: 1px;}
+a{text-decoration: none;outline: none;}
+li{list-style-type: none;}
+button{
+    padding: 5px 10px;
+    border: 1px solid #000;
+    background-color: transparent;
+    border-radius: 1000px;
+    cursor: pointer;
+}
+
+html,body{height: 100%;}
+
+body {
+    background-color: #000;
+}
+
+.view{
+    height: 100%;
+    overflow: hidden;
+}
+
+.left-side{
+    position: absolute;
+    width: 260px;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: #9BD3F5;
+}
+
+/*控制按钮群*/
+.control{
+    height: 65px;
+    overflow: hidden;
+}
+.o-btns{
+    margin-top: 20px;
+    text-align: center;
+}
+.o-btns button{
+    width: 74px;
+}
+.o-btns input[type='file']{
+    display: none;
+}
+
+/*音乐列表*/
+.music-contain{
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    top: 65px;
+    overflow: auto;
+}
+.music-list li{
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 10px;
+    cursor: pointer;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    font-family: "微软雅黑" "宋体";
+
+    -webkit-transition:background-color .3s, padding .3s;
+    transition:background-color .3s, padding .3s;
+}
+.music-list li:hover{
+    padding-left:20px;
+    background-color: #47A0D1;
+}
+.music-list li.playing{
+    padding-left:10px;
+    background-color: #7CB7DB;
+}
+
+.right-side{
+    position: relative;
+    margin-left: 260px;
+    height: 100%;
+}
+
+#cas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    background: #000;
+}
+
+.music-player{
+    visibility: hidden;
+}
