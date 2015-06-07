@@ -12,6 +12,7 @@
 			background:#000;
 			z-index: -1;
 		}
+		#musicFile{display: none;}
 		#mp3{visibility: hidden;}
 	</style>
 </head>
@@ -22,7 +23,9 @@
 	<audio preload autoplay id="mp3"></audio>
 	
 	<button id="author">听作者的歌</button>
-	<input type="file" id="musicFile"/>  也可以自行选择自己的音乐
+	<input type="file" id="musicFile"/>
+	<button id="musicFileBtn">点击选择自己的歌</button>
+	<button id="muti">静音</button>
 
 	<script type="text/javascript" charset="utf-8">
 		(function(){
@@ -34,13 +37,19 @@
 			//停止动画开关
 			var paintStop = false;
 
-			// analyser为analysernode，具有频率的数据，用于创建数据可视化
+			
 			// audioSource 为音频源，bufferSource为buffer源
-			var analyser, audioSource , bufferSource;
+			var audioSource , bufferSource;
 
 			//实例化音频对象
 			var AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
 			var AC = new AudioContext();
+
+			// analyser为analysernode，具有频率的数据，用于创建数据可视化
+			var analyser = AC.createAnalyser();
+			// gain为gainNode，音频的声音处理模块
+			var gain = AC.createGain();
+			gain.gain.value = 1;
 
 			//计时器
 			var RAF = (function() {
@@ -56,10 +65,27 @@
 			}
 			chooseMusic();
 
+			//静音按钮
+			document.getElementById("muti").onclick = function(){
+				if(gain.gain.value==0){
+					gain.gain.value = 1;
+					this.innerHTML = "静音"
+				}else {
+					gain.gain.value = 0;
+					this.innerHTML = "取消静音"
+				}
+			}
+
+			document.getElementById("musicFileBtn").onclick = function(){
+				document.getElementById('musicFile').click();
+			}
+
+			//听作者的歌
 			document.getElementById("author").onclick = function(){
 				chooseMusic();
 			}
 
+			//选择audio作为播放源
 			function chooseMusic(){
 				if(bufferSource){
 					bufferSource.disconnect(analyser);
@@ -131,19 +157,22 @@
 
 					bufferSource.buffer = arg;
 
+					bufferSource.onended = function(){
+						playMusic(arg)
+					}
+
 					//播放音频
 					setTimeout(function(){bufferSource.start()}, 0);
 
 					source = bufferSource;
 				}
 
-				analyser = analyser || AC.createAnalyser();
-
 				//连接analyserNode
 				source.connect(analyser);
 
-				//连接音频的最终输出节点
-				source.connect(AC.destination);
+				analyser.connect(gain);
+
+				gain.connect(AC.destination);
 			}
 
 			//绘制音谱的参数
@@ -178,11 +207,12 @@
 					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					
 					//出来的数组为8bit整型数组，即值为0~256，整个数组长度为1024，即会有1024个频率，只需要取部分进行显示
-					var array = new Uint8Array(analyser.frequencyBinCount);
-					analyser.getByteFrequencyData(array);
+					var array_length = analyser.frequencyBinCount;
+					var array = new Uint8Array(array_length);
+					analyser.getByteFrequencyData(array);	//将音频节点的数据拷贝到Uin8Array中
 
 					//数组长度与画布宽度比例
-					var bili = array.length/canvas.width;
+					var bili = array_length/canvas.width;
 					
 					for (var i = 0; i < rt_array.length; i++) {
 						var rt = rt_array[i];
