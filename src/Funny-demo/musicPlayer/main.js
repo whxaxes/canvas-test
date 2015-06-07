@@ -7,6 +7,12 @@
 
     //实例化音频对象
     var AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
+
+    if(!AudioContext){
+        alert("您的浏览器不支持audio API，请更换浏览器（chrome、firefox）再尝试")
+        return;
+    }
+
     var AC = new AudioContext();
 
     // analyser为analysernode，具有频率的数据，用于创建数据可视化
