@@ -2,7 +2,7 @@
 
 canvas or other demo
 
-以下demo建议用chrome观看，仅为了好玩，所以懒得做兼容<br>
+以下demo建议用chrome查看<br>
 
 部分效果：<br>
 [音频可视化](http://whxaxes.github.io/canvas-test/src/Funny-demo/musicPlayer/index.html)<br>
