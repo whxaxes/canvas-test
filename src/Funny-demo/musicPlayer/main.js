@@ -141,15 +141,17 @@
 
             if (bufferSource && ('stop' in bufferSource)) bufferSource.stop();
 
-            if (bufferSource) {
-                bufferSource.disconnect(analyser);
-                bufferSource.disconnect(AC.destination);
-            }
+            try{
+                if (bufferSource) {
+                    bufferSource.disconnect(analyser);
+                    bufferSource.disconnect(AC.destination);
+                }
 
-            if (audioSource) {
-                audioSource.disconnect(analyser);
-                audioSource.disconnect(AC.destination);
-            }
+                if (audioSource) {
+                    audioSource.disconnect(analyser);
+                    audioSource.disconnect(AC.destination);
+                }
+            }catch(e){}
 
             if(!ismuti){
                 gainnode.gain.value = 1;
