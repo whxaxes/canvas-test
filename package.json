@@ -6,6 +6,6 @@
     "grunt-html-index": "*"
   },
   "dependencies": {
-    "easy-router": "^2.0.7"
+    "easy-router": "^2.0.10"
   }
 }
