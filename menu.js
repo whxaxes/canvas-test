@@ -5,6 +5,7 @@ var fs = require("fs");
 var base = "./src/";
 var files = fs.readdirSync(base);
 
+
 var html = fs.readFileSync("./menu.html").toString();
 var ul_html = '\n<div class="view">';
 files.forEach(function(f){
