@@ -1,3 +1,5 @@
+//canvas-test server
+
 var router = require('easy-router');
 
 var port = 3030;
