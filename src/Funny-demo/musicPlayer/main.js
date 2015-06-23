@@ -304,12 +304,13 @@
     //音谱条对象
     function Retangle(w, h, x, y) {
         this.w = w;
-        this.h = h;
+        this.h = h; //小红块高度
         this.x = x;
         this.y = y;
         this.jg = 3;
         this.power = 0;
-        this.dy = y;
+        this.dy = y; //小红块位置
+        this.initY = y;
         this.num = 0;
     };
 
@@ -318,9 +319,12 @@
     Rp.update = function(power){
         this.power = power;
         this.num = ~~(this.power / this.h + 0.5);
-        if (this.power >= this.y - (this.dy + this.h)) {
-            this.dy = this.y - this.power - this.h - 1;
-        } else if (this.dy + this.h >= this.y) {
+
+        //更新小红块的位置，如果音频条长度高于红块位置，则红块位置则为音频条高度，否则让小红块下降
+        var nh = this.dy + this.h;//小红块当前位置
+        if (this.power >= this.y - nh) {
+            this.dy = this.y - this.power - this.h - (this.power == 0 ? 0 : 1);
+        } else if (nh > this.y) {
             this.dy = this.y - this.h;
         } else {
             this.dy += 1;
@@ -337,8 +341,12 @@
             var y = this.y - i * (this.h + this.jg);
             ctx.clearRect(this.x - 1, y, this.w + 2, this.jg);
         }
-        ctx.fillStyle = "#950000"
-        ctx.fillRect(this.x, this.dy, this.w, this.h);
+        ctx.fillStyle = "#950000";
+        ctx.fillRect(this.x, ~~this.dy, this.w, this.h);
+
+        //if(rt_array.indexOf(this)===24){
+        //    console.log(this.dy)
+        //}
     };
 
     app.init();
