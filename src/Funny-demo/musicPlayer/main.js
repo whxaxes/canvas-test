@@ -318,9 +318,9 @@
     Rp.update = function(power){
         this.power = power;
         this.num = ~~(this.power / this.h + 0.5);
-        if (this.power > this.y - (this.dy + this.h)) {
+        if (this.power >= this.y - (this.dy + this.h)) {
             this.dy = this.y - this.power - this.h - 1;
-        } else if (this.dy + this.h > this.y) {
+        } else if (this.dy + this.h >= this.y) {
             this.dy = this.y - this.h;
         } else {
             this.dy += 1;
