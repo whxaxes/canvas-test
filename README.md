@@ -1,7 +1,5 @@
 # canvas-test
 
-### canvas or other demo
-
 #### 以下demo建议用`chrome`查看<br>
 
 部分在线效果：<br>
