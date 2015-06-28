@@ -2,65 +2,93 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title></title>
+    <title>LOW POLY（图片三角化）</title>
+    <style>
+        canvas{float:left;margin: 10px 0 0 30px;}
+    </style>
 </head>
 <body>
-<canvas id="cas"></canvas>
+<div>
+    （请选取自己的图片文件）
+    <input type="file" id="files" accept="image/*"/>
+</div>
 
+<canvas id="cas"></canvas>
+<canvas id="cas2"></canvas>
+
+<script src="sobel.js"></script>
 <script src="delaunay.js"></script>
 <script src="freestring.js"></script>
 <script>
+    var inputFile = document.getElementById("files");
     var canvas = document.getElementById("cas");
     var ctx = canvas.getContext("2d");
 
-    var count = 0;
+    var canvas_2 = document.getElementById("cas2");
+    var ctx_2 = canvas_2.getContext("2d");
+
     var particle = [];
 
     var img = new Image();
-    img.src = "./test3.jpg";
+    img.src = "./test.jpg";
     img.onload = function () {
-        canvas.width = this.width;
-        canvas.height = this.height;
+        parse(this);
+    };
 
-        ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+    inputFile.onchange = function(){
+        if(!this.files.length) return;
 
-        while(count--){
-            particle.push([Math.random()*canvas.width , Math.random()*canvas.height])
+        var file = this.files[0];
+
+        if (!/\/(?:jpeg|png)/i.test(file.type)) {
+            alert("图片需为JPG或者PNG格式");
+            return;
         }
-        particle = particle.concat([[0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]])
+
+        var reader = new FileReader();
+        reader.onload = function(){
+            var img = new Image();
+            img.src = this.result;
+
+            img.onload = function(){
+                parse(this);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    function parse(img){
+        canvas.width = canvas_2.width = (img.width > 800) ? 800 : img.width;
+        canvas.height = canvas_2.height = img.height * canvas.width/img.width;
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-        var kernel = [
-            [ 1, 0,-1],
-            [ 2, 0,-2],
-            [ 1, 0,-1]
-        ];
-        var reducedImage = reduceColor(imgData);
-        var collectors = [];
-        var last = 0;
-        var cout = 0;
-        for(var x=0;x<canvas.width;x++){
-            for(var y=0;y<canvas.height;y++){
-                var index = ~~(y*imgData.width + x)*4;
-                var value = Math.min(calcValue(x, y, kernel, reducedImage), 255);
-//                imgData.data[index] = value;
-//                imgData.data[index+1] = value;
-//                imgData.data[index+2] = value;
+        var newImgData = Sobel(imgData);
 
-                if(value > 180){
+        var collectors = [];
+        var index;
+//        收集亮度色值大于40的点
+        for(var x=0;x<imgData.width;x++){
+            for(var y=0;y<imgData.height;y++){
+                index = ~~(y*imgData.width + x)*4;
+
+                if(newImgData.data[index] > 40){
                     collectors.push([x , y]);
                 }
             }
         }
-//
-//        ctx.putImageData(imgData , 0 , 0);
-//        return;
 
+//        对收集到的点随机排列
         collectors.sort(function(){return Math.random()-Math.random()});
-        particle = particle.concat(collectors.slice(0,10000));
+        var size = ~~(collectors.length/40);
+        particle = particle.concat(collectors.slice(0,size));
+        particle = particle.concat([[0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]]);
 
+//        使用delaunay三角化获取三角坐标
         var triangles = Delaunay.triangulate(particle);
+
         var x1,x2,x3,y1,y2,y3,cx,cy;
         for(var i=0;i < triangles.length; i+=3) {
             x1 = particle[triangles[i]][0];
@@ -70,64 +98,30 @@
             y2 = particle[triangles[i+1]][1];
             y3 = particle[triangles[i+2]][1];
 
-            cx = (x1+x2+x3)/3;
-            cy = (y1+y2+y3)/3;
+//            获取三角形中心点坐标
+            cx = ~~((x1 + x2 + x3) / 3);
+            cy = ~~((y1 + y2 + y3) / 3);
 
-            var index = ~~(cy*imgData.width + cx)*4;
+//            获取坐标的颜色值
+            index = (cy*imgData.width + cx)*4;
             var color_r = imgData.data[index];
             var color_g = imgData.data[index+1];
             var color_b = imgData.data[index+2];
-            var color = freestring(function(){/*rgba(${0},${1},${2},1)*/},[color_r , color_g , color_b]);
 
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.lineTo(x3, y3);
-            ctx.closePath();
+//            绘制三角形
+            ctx_2.save();
+            ctx_2.beginPath();
+            ctx_2.moveTo(x1, y1);
+            ctx_2.lineTo(x2, y2);
+            ctx_2.lineTo(x3, y3);
+            ctx_2.closePath();
 
-            ctx.fillStyle = color;
-            ctx.fill();
-
-            ctx.restore();
-
-//            break;
+            ctx_2.fillStyle = ctx_2.strokeStyle = "rgba("+color_r+","+color_g+","+color_b+",1)";
+            ctx_2.fill();
+            ctx_2.stroke();
+            ctx_2.restore();
         }
     }
-
-//    sobel边缘算法
-    function reduceColor(imgData){
-        var width = canvas.width;
-        var height = canvas.height;
-
-        var value , index;
-        var table = new Array(width);
-        for(var x=0;x<width;x++){
-            table[x] = new Array(height);
-            for(var y=0;y<height;y++){
-                index = ~~(y*imgData.width + x)*4;
-                value = Math.floor((imgData.data[index] + imgData.data[index + 1] + imgData.data[index + 2]) / 3);
-                table[x][y] = value;
-            }
-        }
-
-        return table;
-    }
-
-    function getReducedValue(x, y , rimage) {
-        return (x < 0 || canvas.width <= x || y < 0 || canvas.height <= y) ? 0: rimage[x][y];
-    }
-
-    function calcValue(x, y , kernel , rimage) {
-        var result = 0;
-        for (var i = -1; i <= 1; i++) {
-            for (var j = -1; j <= 1; j++) {
-                result += kernel[i + 1][j + 1] * getReducedValue(x + i, y + j , rimage);
-            }
-        }
-        return result;
-    }
-
 </script>
 </body>
 </html>
