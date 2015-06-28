@@ -82,7 +82,7 @@
 
 //        对收集到的点随机排列
         collectors.sort(function(){return Math.random()-Math.random()});
-        var size = ~~(collectors.length/40);
+        var size = ~~(collectors.length/50);
         particle = particle.concat(collectors.slice(0,size));
         particle = particle.concat([[0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]]);
 
