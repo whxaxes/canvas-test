@@ -97,7 +97,7 @@
             collectors.sort(function(){return Math.random()-Math.random()});
 
 //        添加一些随机点
-            for(var i=0;i<500;i++){particles.push([Math.random()*canvas.width , Math.random()*canvas.height]);}
+            for(var i=0;i<300;i++){particles.push([Math.random()*canvas.width , Math.random()*canvas.height]);}
 
 //        添加边缘点
             particles = particles.concat(collectors.slice(0,~~(collectors.length/50)));
@@ -134,7 +134,6 @@
                 ctx.lineTo(x2, y2);
                 ctx.lineTo(x3, y3);
                 ctx.closePath();
-
                 ctx.fillStyle = "rgba("+color_r+","+color_g+","+color_b+",1)";
                 ctx.fill();
                 ctx.restore();
