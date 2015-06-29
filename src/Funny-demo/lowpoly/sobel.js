@@ -1,10 +1,12 @@
 (function(root) {
   'use strict';
 
-  function Sobel(imageData) {
+  function Sobel(imageData , callback) {
     if (!(this instanceof Sobel)) {
-      return new Sobel(imageData);
+      return new Sobel(imageData , callback);
     }
+
+    callback = callback || function(){}
 
     var w = imageData.width;
     var h = imageData.height;
@@ -77,10 +79,16 @@
         var magnitude = Math.sqrt((pixelX * pixelX) + (pixelY * pixelY))>>0;
 
         sobelData.push(magnitude, magnitude, magnitude, 255);
+
+        callback(magnitude , x , y)
       }
     }
 
-    return new ImageData(new Uint8ClampedArray(sobelData), w, h);
+    try{
+      return new ImageData(new Uint8ClampedArray(sobelData), w, h);
+    }catch(e){
+      return {data : sobelData};
+    }
   }
 
   if (typeof exports !== 'undefined') {

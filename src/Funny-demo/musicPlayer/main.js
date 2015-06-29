@@ -343,10 +343,6 @@
         }
         ctx.fillStyle = "#950000";
         ctx.fillRect(this.x, ~~this.dy, this.w, this.h);
-
-        //if(rt_array.indexOf(this)===24){
-        //    console.log(this.dy)
-        //}
     };
 
     app.init();

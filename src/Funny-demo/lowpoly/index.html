@@ -78,20 +78,11 @@
         setTimeout(function(){
             var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-            var newImgData = Sobel(imgData);
-
-            var collectors = [];
-            var index;
 //        收集色值大于40的边缘点
-            for(var x=0;x<imgData.width;x++){
-                for(var y=0;y<imgData.height;y++){
-                    index = ~~(y*imgData.width + x)*4;
-
-                    if(newImgData.data[index] > 40){
-                        collectors.push([x , y]);
-                    }
-                }
-            }
+            var collectors = [];
+            Sobel(imgData , function(value , x , y){
+                if(value > 40){collectors.push([x , y]);}
+            });
 
 //        对收集到的点随机排列
             collectors.sort(function(){return Math.random()-Math.random()});
@@ -103,7 +94,7 @@
             particles = particles.concat(collectors.slice(0,~~(collectors.length/50)));
 
 //        添加四顶点坐标
-            particles = particles.concat([[0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]]);
+            particles.push([0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]);
 
 //        使用delaunay三角化获取三角坐标
             var triangles = Delaunay.triangulate(particles);
