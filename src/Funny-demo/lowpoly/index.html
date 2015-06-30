@@ -28,6 +28,8 @@
 <script src="sobel.js"></script>
 <script src="delaunay.js"></script>
 <script>
+    "use strict";
+
     var inputFile = document.getElementById("files");
     var canvas = document.getElementById("cas");
     var ctx = canvas.getContext("2d");
@@ -78,25 +80,27 @@
         setTimeout(function(){
             var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-//        收集色值大于40的边缘点
+//          收集色值大于40的边缘像素点
             var collectors = [];
             Sobel(imgData , function(value , x , y){
                 if(value > 40){collectors.push([x , y]);}
             });
 
-//        对收集到的点随机排列
-            collectors.sort(function(){return Math.random()-Math.random()});
-
-//        添加一些随机点
+//          添加一些随机点
             for(var i=0;i<300;i++){particles.push([Math.random()*canvas.width , Math.random()*canvas.height]);}
 
-//        添加边缘点
-            particles = particles.concat(collectors.slice(0,~~(collectors.length/50)));
+//          添加随机边缘点，数量为边缘点数量除于50
+            var length = ~~(collectors.length/50), random;
+            for(var l=0;l<length;l++){
+                random = (Math.random()*collectors.length)<<0;
+                particles.push(collectors[random]);
+                collectors.splice(random , 1);
+            }
 
-//        添加四顶点坐标
+//          添加四顶点坐标
             particles.push([0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]);
 
-//        使用delaunay三角化获取三角坐标
+//          使用delaunay三角化获取三角坐标
             var triangles = Delaunay.triangulate(particles);
 
             var x1,x2,x3,y1,y2,y3,cx,cy;
@@ -108,17 +112,17 @@
                 y2 = particles[triangles[i+1]][1];
                 y3 = particles[triangles[i+2]][1];
 
-//            获取三角形中心点坐标
+//              获取三角形中心点坐标
                 cx = ~~((x1 + x2 + x3) / 3);
                 cy = ~~((y1 + y2 + y3) / 3);
 
-//            获取中心点坐标的颜色值
-                index = (cy*imgData.width + cx)*4;
+//              获取中心点坐标的颜色值
+                var index = (cy*imgData.width + cx)*4;
                 var color_r = imgData.data[index];
                 var color_g = imgData.data[index+1];
                 var color_b = imgData.data[index+2];
 
-//            绘制三角形
+//              绘制三角形
                 ctx.save();
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
