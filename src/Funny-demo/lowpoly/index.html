@@ -29,7 +29,6 @@
 <script src="delaunay.js"></script>
 <script>
     "use strict";
-
     var inputFile = document.getElementById("files");
     var canvas = document.getElementById("cas");
     var ctx = canvas.getContext("2d");
@@ -39,6 +38,8 @@
     uplbtn.onclick = function(){inputFile.click();};
     uplbtn.ontouchstart = function(){this.className="touch"};
     uplbtn.ontouchend = function(){this.className=""};
+
+    var jxdvalue = 50;      //精细度，值越小，图片越精细
 
     var img = new Image();
     img.src = "./test2.jpg";
@@ -58,7 +59,7 @@
 
         var reader = new FileReader();
         reader.onload = function(){
-            var img = new Image();
+            img = new Image();
             img.src = this.result;
 
             img.onload = function(){
@@ -90,7 +91,7 @@
             for(var i=0;i<300;i++){particles.push([Math.random()*canvas.width , Math.random()*canvas.height]);}
 
 //          添加随机边缘点，数量为边缘点数量除于50
-            var length = ~~(collectors.length/50), random;
+            var length = ~~(collectors.length/jxdvalue), random;
             for(var l=0;l<length;l++){
                 random = (Math.random()*collectors.length)<<0;
                 particles.push(collectors[random]);
