@@ -18,7 +18,6 @@
     var w = imgdata.width;
     var h = imgdata.height;
     var data = imgdata.data;
-    var sobelData = [];
 
     //获取x、y所处像素点的rgb值，并返回平均值
     function getAvg(x , y){
@@ -32,7 +31,6 @@
 
     for(var y=0;y<h;y++){
       for(var x = 0;x<w;x++){
-
         var pixelX = (
           (kernelX[0][0] * getAvg(x - 1, y - 1)) +
           (kernelX[0][1] * getAvg(x, y - 1)) +
@@ -59,16 +57,8 @@
 
         var magnitude = Math.sqrt((pixelX * pixelX) + (pixelY * pixelY))>>0;
 
-        sobelData.push(magnitude, magnitude, magnitude, 255);
-
         callback(magnitude , x , y);
       }
-    }
-
-    try{
-      return new ImageData(new Uint8ClampedArray(sobelData), w, h);
-    }catch(e){
-      return new Uint8ClampedArray(sobelData);
     }
   }
 
