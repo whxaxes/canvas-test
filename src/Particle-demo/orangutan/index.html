@@ -19,10 +19,17 @@
     power:<input type="range" id="points" min="10" max="100" value="50" step="10" />
 </div>
 
+<script src="../../public/stats.min.js"></script>
 <script>
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext('2d');
     var img;
+    var stats = new Stats();
+    stats.setMode(0);
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.right = '0px';
+    stats.domElement.style.top = '0px';
+    document.body.appendChild( stats.domElement );
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -161,6 +168,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             tick(tickTime);
+
+            stats.update();
 
             RAF(function () {
                 animate(tick)

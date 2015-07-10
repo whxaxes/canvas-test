@@ -2,6 +2,14 @@ particles = [];
 blackholes = [];
 BH_SIZE = 15;
 
+#设置状态
+stats = new Stats();
+stats.setMode(0);
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.right = '0px';
+stats.domElement.style.top = '0px';
+document.body.appendChild( stats.domElement );
+
 canvas = document.getElementById 'cas'
 ctx = canvas.getContext("2d")
 
@@ -187,9 +195,8 @@ canvas.onmouseup = canvas.onmouseout = (e)->
 
 #执行动画
 execAnimate = ->
-  for i in [1...300]
-    colors = (parseInt(Math.random()*125 + 130) for n in [0...3])
-    particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(#{colors[0]},#{colors[1]},#{colors[2]},1)"))
+  for i in [1...500]
+    particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(255,255,255,.5)"))
   animate();
 
 #动画逐帧逻辑
@@ -227,6 +234,8 @@ animate = ->
     p.draw()
 
   ctx.drawImage(bufferCanvas , 0 , 0);
+
+  stats.update();
   RAF(animate)
 
 #执行
