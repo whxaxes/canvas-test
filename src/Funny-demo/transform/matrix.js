@@ -5,11 +5,13 @@
 
 !function(root , fatory){
     if('define' in root && define.cmd){
-        define(function(require , module , exports){
+        define(function(require, exports, module){
             module.exports = fatory()
         })
+    }else if(typeof module === "object" && module.exports){
+        module.exports = fatory();
     }else {
-        window.getMatrix = fatory();
+        window.matrix = fatory();
     }
 }(this , function(){
     /**
@@ -101,26 +103,8 @@
         }
     }
 
-    /**
-     * 测试三元一次方程
-     */
-    function test(){
-        var r = equation(
-            [100 , 100 , 1 , 200],
-            [500 , 100 , 1 , 500],
-            [100 , 500 , 1 , 100]
-        );
-        console.log("result:x:" + r.x + " , y:" + r.y + " , z:" + r.z);
-        console.log("should:x:0.75 , y:-0.25 , z:150");
-
-        r = equation(
-            [2 , 4 , 6 , 8],
-            [4 , 2 , 8 , 6],
-            [8 , 6 , 2 , 4]
-        );
-        console.log("result:x:" + r.x + " , y:" + r.y + " , z:" + r.z);
-        console.log("should:x:"+(-13/23)+" , y:"+(27/23)+" , z:"+(17/23));
-    }
-
-    return getMatrix;
+    return {
+        getMatrix : getMatrix,
+        equation : equation
+    };
 });

@@ -179,10 +179,10 @@
 
         if(hasPic){
             //传入变换前后的点坐标，计算变换矩阵
-            var matrix = getMatrix.apply(this , arguments);
+            var result = matrix.getMatrix.apply(this , arguments);
 
             //变形
-            ctx.transform(matrix.a , matrix.b , matrix.c , matrix.d , matrix.e , matrix.f);
+            ctx.transform(result.a , result.b , result.c , result.d , result.e , result.f);
 
             //绘制图片
             ctx.drawImage(img , idots[0].x , idots[0].y , img.width , img.height);
