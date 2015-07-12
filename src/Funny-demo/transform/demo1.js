@@ -8,10 +8,37 @@
     //将图片分割的分数控制
     var countChoose = document.getElementById("count");
 
-    var hasDot = dotChoose.checked;
-    var hasRect = rectChoose.checked;
-    var hasPic = picChoose.checked;
-    var count = getSelected();
+    //获取url后面跟的参数
+    var a = document.createElement("A");
+    a.href = window.location.href;
+    var ret = {},
+        seg = a.search.replace(/^\?/ , '').split("&"),
+        len = seg.length,
+        i = 0,s;
+    for(;i<len;i++){
+        if(!seg[i])continue;
+        s = seg[i].split("=");
+        ret[s[0]] = s[1];
+    }
+
+    //如果url后面有跟参数，则用参数赋值
+    if('dot' in ret){
+        if(ret.dot==="true") dotChoose.setAttribute("checked","");
+        else dotChoose.removeAttribute("checked");
+    }
+    if('rect' in ret){
+        if(ret.rect==="true") rectChoose.setAttribute("checked","");
+        else rectChoose.removeAttribute("checked");
+    }
+    if('pic' in ret){
+        if(ret.pic==="true") picChoose.setAttribute("checked","");
+        else picChoose.removeAttribute("checked");
+    }
+
+    var hasDot = dotChoose.checked,
+        hasRect = rectChoose.checked,
+        hasPic = picChoose.checked,
+        count = getSelected();
 
     dotChoose.onchange = function(){ hasDot = this.checked;render(); };
     rectChoose.onchange = function(){ hasRect = this.checked;render(); };
@@ -69,6 +96,10 @@
         render()
     };
 
+    /**
+     * 鼠标拖动事件绑定
+     * @param e
+     */
     window.onmousedown = function(e){
         if(!dots.length)return;
 
@@ -107,6 +138,11 @@
         }
     };
 
+    /**
+     * 获取鼠标点击/移过的位置
+     * @param e
+     * @returns {{t: number, l: number}}
+     */
     function getArea(e){
         e = e || window.event;
         return {
@@ -116,7 +152,7 @@
     }
 
     /**
-     * 画布渲染方法
+     * 画布渲染
      */
     function render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
