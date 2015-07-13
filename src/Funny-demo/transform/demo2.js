@@ -14,6 +14,8 @@
     var rectChoose = document.getElementById("rect");
     //是否显示贴图的checkbox
     var picChoose = document.getElementById("pic");
+    //将图片分割的分数控制
+    var countChoose = document.getElementById("count");
 
     //获取url后面跟的参数
     var a = document.createElement("A");
@@ -51,20 +53,26 @@
     var hasDot = dotChoose.checked,
         hasRect = rectChoose.checked,
         hasPic = picChoose.checked,
-        count = 20;
+        count = getSelected();
 
-    dotChoose.onchange = function () {
-        hasDot = this.checked;
+    dotChoose.onchange = function () {hasDot = this.checked;render();};
+    rectChoose.onchange = function () {hasRect = this.checked;render();};
+    picChoose.onchange = function () {hasPic = this.checked;render();};
+    countChoose.onchange = function(){
+        count = getSelected();
+        //count更改后需要重新计算所有点的初始位置
+        idots = rectsplit(count, dots[0], dots[1], dots[2], dots[3]);
+        ndots = rectsplit(count, dots[0], dots[1], dots[2], dots[3]);
         render();
     };
-    rectChoose.onchange = function () {
-        hasRect = this.checked;
-        render();
-    };
-    picChoose.onchange = function () {
-        hasPic = this.checked;
-        render();
-    };
+
+    function getSelected(){
+        var ops = countChoose.getElementsByTagName("OPTION") ,op;
+        for(var i=0;i<ops.length;i++){
+            op = ops[i];
+            if(op.selected)return +op.value;
+        }
+    }
 
     var canvas = document.getElementById("cas");
     var ctx = canvas.getContext("2d");
@@ -98,53 +106,91 @@
         render();
     };
 
-    var maxDis = 150,
-        focallength = 250,
-        area={};
+    var area={};
     window.onmousemove = function (e) {
         if(!ndots) return;
-
         e = e || window.event;
+
         area = {
             x: e.clientX - canvas.offsetLeft + document.body.scrollLeft + document.documentElement.scrollLeft,
             y: e.clientY - canvas.offsetTop + document.body.scrollTop + document.documentElement.scrollTop
         };
     };
 
+    //动画循环舞台
+    var maxDis = 140,
+        focallength = 250;
     animate();
     function animate(){
         var len = ndots ? ndots.length : 0,
+            ax = area.x,
+            ay = area.y,
             d, c, scale, dis, xc, yc;
 
         while(len){
             len--;
+
             d = ndots[len];
 
             if(!d.ix){
                 d.ix = d.x;
                 d.iy = d.y;
+                d.z = 0;
+                //d.a = 1;
+                //d.up = false;
             }
 
-            if(area.x==null || area.y==null) break;
+            if (ax == null || ay == null) break;
 
-            xc = d.ix - area.x;
-            yc = d.iy - area.y;
+            xc = d.ix - ax;
+            yc = d.iy - ay;
+
             dis = Math.sqrt(xc*xc + yc*yc);
-            var z = (maxDis - dis)*2;
-            d.ez = z > 0 ? z : 0;
 
-            c = (d.ez - d.z) || 0;
+            //将效果放大两倍
+            d.ez = (maxDis - dis) * 2;
+            if(d.ez >= 0){
+                d.ax = ax;
+                d.ay = ay;
+            }else {
+                d.ez = 0;
+            }
 
+            //赋给目的z轴值ez以及当前z轴值z
+            c = d.ez - d.z;
             d.z += c * 0.1;
 
-            scale = (focallength + d.z) / focallength;
-            d.x = area.x + xc * scale;
-            d.y = area.y + yc * scale;
+            //c = d.ez - d.z;
+            //c = c < 0 ? 0 : c;
+            //if(d.ez >= d.z){
+            //    if(!d.up) d.a = 0;
+            //
+            //    d.up = true;
+            //    d.a += c*0.01;
+            //
+            //    d.z += d.a;
+            //
+            //    d.z = d.z >= d.ez ? d.ez : d.z
+            //}else {
+            //    if(d.up) d.a = 0;
+            //
+            //    d.up = false;
+            //    d.a -= 1;
+            //
+            //    d.z += d.a;
+            //    d.z = d.z <= d.ez ? d.ez : d.z
+            //}
+
+            scale = focallength / (focallength + d.z);
+
+            d.x = (d.ax || ax) + (d.ix - (d.ax || ax)) / scale;
+            d.y = (d.ay || ay) + (d.iy - (d.ay || ay)) / scale;
         }
 
         render();
 
         stats.update();
+
         RAF(animate);
     }
 
@@ -155,6 +201,10 @@
         if(!ndots) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillRect(dots[0].x , dots[0].y , img.width, img.height)
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#fff";
 
         ndots.forEach(function (d, i) {
             //获取平行四边形的四个点
@@ -181,7 +231,7 @@
                 ctx.save();
                 ctx.fillStyle = "red";
                 ctx.fillRect(d.x - 1, d.y - 1, 2, 2);
-                ctx.save();
+                ctx.restore();
             }
         });
     }
@@ -199,15 +249,11 @@
         ctx.save();
         //根据变换后的坐标创建剪切区域
         ctx.beginPath();
-        ctx.moveTo(_arg_1.x, _arg_1.y);
+        ctx.moveTo(_arg_3.x, _arg_3.y);
+        ctx.lineTo(_arg_1.x, _arg_1.y);
         ctx.lineTo(_arg_2.x, _arg_2.y);
-        ctx.lineTo(_arg_3.x, _arg_3.y);
+        if (hasRect)  ctx.stroke();
         ctx.closePath();
-        if (hasRect) {
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = "red";
-            ctx.stroke();
-        }
         ctx.clip();
 
         var result;
@@ -262,8 +308,7 @@
 
                 ndots.push({
                     x: x1 + ab_x * j,
-                    y: y1 + ab_y * j,
-                    z: 0
+                    y: y1 + ab_y * j
                 })
             }
         }

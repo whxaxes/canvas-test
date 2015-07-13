@@ -21,10 +21,15 @@
 <div class="tips">Tips:鼠标移至图片处</div>
 <div class="control">
     <input type="checkbox" id="dot"/><label for="dot">点</label>
-    <input type="checkbox" id="rect"/><label for="rect">方格</label>
+    <input type="checkbox" id="rect" checked/><label for="rect">方格</label>
     <input type="checkbox" id="pic" checked/><label for="pic">贴图</label>
+    <select name="count" id="count">
+        <option value="5">5</option>
+        <option value="15">15</option>
+        <option value="30" selected>30</option>
+    </select>
 </div>
-<canvas id="cas" width="1000" height="500">
+<canvas id="cas" width="1000" height="600">
     亲，你滴浏览器太out啦，换一个吧
 </canvas>
 
