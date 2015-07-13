@@ -26,6 +26,7 @@ files.forEach(function(f){
         }
     }
 });
+
 ul_html += "</div>\n";
 html = html.replace(/(<body>)[\s\S]*?(<\/body>)/ , "$1"+ul_html+"$2");
 fs.writeFileSync("./menu.html" , html);
