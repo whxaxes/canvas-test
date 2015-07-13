@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>图像拉扯</title>
+    <style>
+        body{-moz-user-select: none;}
+        #cas{
+            position: absolute;
+            top: 80px;
+            left: 0;
+            right: 0;
+            margin: auto;
+            border: 1px solid;
+        }
+        .tips{text-align: center;margin: 15px 0;}
+        .control{ text-align: center; }
+    </style>
+</head>
+<body onselectstart="return false">
+<div class="tips">Tips:拖动图片四个角</div>
+<div class="control">
+    <input type="checkbox" id="dot"/><label for="dot">点</label>
+    <input type="checkbox" id="rect"/><label for="rect">方格</label>
+    <input type="checkbox" id="pic" checked/><label for="pic">贴图</label>
+    <select name="count" id="count">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="4">4</option>
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="30">30</option>
+        <option value="50">50</option>
+    </select>
+</div>
+<canvas id="cas" width="1000" height="500">
+    亲，你滴浏览器太out啦，换一个吧
+</canvas>
+
+<script src="matrix.js"></script>
+<script src="demo1.js"></script>
+</body>
+</html>

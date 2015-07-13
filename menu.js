@@ -45,7 +45,7 @@ function findHtml(folder_path , collector){
             return;
         }
 
-        if(/\.html$/.test(f)){
+        if(/\.html$/.test(f) && !/^_/.test(f)){
             collector.push([npath , f]);
         }
     });
