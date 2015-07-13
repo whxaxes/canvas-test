@@ -1,4 +1,6 @@
 !function(){
+    "use strict";
+
     //是否显示点的checkbox
     var dotChoose = document.getElementById("dot");
     //是否显示方格的checkbox
@@ -65,7 +67,7 @@
     var dotscopy , idots;
 
     var img = new Image();
-    img.src = Math.random()>0.5?"./img/test2.jpg":"./img/test.jpg";
+    img.src = "./img/test.jpg";
     img.onload = function(){
         var img_w = img.width/2;
         var img_h = img.height/2;
