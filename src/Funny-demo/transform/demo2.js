@@ -98,7 +98,7 @@
         render();
     };
 
-    var maxDis = 100,
+    var maxDis = 150,
         focallength = 250,
         area={};
     window.onmousemove = function (e) {
@@ -130,7 +130,7 @@
             xc = d.ix - area.x;
             yc = d.iy - area.y;
             dis = Math.sqrt(xc*xc + yc*yc);
-            var z = (maxDis - dis)*3;
+            var z = (maxDis - dis)*2;
             d.ez = z > 0 ? z : 0;
 
             c = (d.ez - d.z) || 0;
