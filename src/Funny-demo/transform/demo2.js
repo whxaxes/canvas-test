@@ -203,7 +203,7 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillRect(dots[0].x , dots[0].y , img.width, img.height)
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = "#fff";
 
         ndots.forEach(function (d, i) {
@@ -252,7 +252,7 @@
         ctx.moveTo(_arg_3.x, _arg_3.y);
         ctx.lineTo(_arg_1.x, _arg_1.y);
         ctx.lineTo(_arg_2.x, _arg_2.y);
-        if (hasRect)  ctx.stroke();
+        if(hasRect) ctx.stroke();
         ctx.closePath();
         ctx.clip();
 
