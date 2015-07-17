@@ -30,7 +30,7 @@ files.sort(function(a, b){
 });
 
 mlList.forEach(function(f){
-    var npath = path.join(base + f);
+    var npath = base + "/" + f;
     var array = findHtml(npath);
 
     array.sort(function(a, b){
