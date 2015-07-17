@@ -23,8 +23,8 @@
 			top:0;
 			width: 100%;
 			height: 100%;
-			background:url("pic1.jpg") no-repeat;
-			background-size: 100% 100%;
+			background:#000 url("pic1.jpg") no-repeat center center;
+			background-size: auto 100%;
 			backface-visibility: hidden;
 			overflow: hidden;
 		}
@@ -50,6 +50,7 @@
 <script type="text/javascript" charset="utf-8">
 	var canvas = document.getElementById("cas"), ctx = canvas.getContext("2d");
 	var x1, y1, a = 30, timeout, totimes = 100, distance = 30;
+	var saveDot = [];
 
 	var canvasBox = document.getElementById("bb");
 
@@ -59,7 +60,8 @@
 	var img = new Image();
 	img.src = "pic2.jpg";
 	img.onload = function () {
-		ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+		var w = canvas.height*img.width/img.height;
+		ctx.drawImage(img, (canvas.width-w)/2, 0, w, canvas.height);
 		tapClip()
 	};
 
@@ -95,7 +97,7 @@
 		ctx.lineWidth = a * 2;
 		ctx.globalCompositeOperation = "destination-out";
 
-		canvas.addEventListener(tapstart, function (e) {
+		window.addEventListener(tapstart, function (e) {
 			clearTimeout(timeout);
 			e.preventDefault();
 
@@ -104,16 +106,12 @@
 			x1 = area.x;
 			y1 = area.y;
 
-			ctx.beginPath();
-			ctx.arc(x1, y1, 1, 0, 2 * Math.PI);
-			ctx.fill();
+			drawLine(x1, y1);
 
-			canvas.addEventListener(tapmove, tapmoveHandler);
+			this.addEventListener(tapmove, tapmoveHandler);
 
-			canvas.addEventListener('mouseleave', function(){ area = null; });
-			canvas.addEventListener(tapend, function () {
-				area = null;
-				canvas.removeEventListener(tapmove, tapmoveHandler);
+			this.addEventListener(tapend, function () {
+				this.removeEventListener(tapmove, tapmoveHandler);
 
 				//检测擦除状态
 				timeout = setTimeout(function () {
@@ -136,30 +134,49 @@
 
 				e.preventDefault();
 
-				if(area==null){
-					area = getClipArea(e, hastouch);
+				area = getClipArea(e, hastouch);
 
-					x1 = area.x;
-					y1 = area.y;
+				x2 = area.x;
+				y2 = area.y;
 
-					ctx.beginPath();
-					ctx.arc(x1, y1, 1, 0, 2 * Math.PI);
-					ctx.fill();
-				}else {
-					area = getClipArea(e, hastouch);
+				drawLine(x1, y1, x2, y2);
 
-					x2 = area.x;
-					y2 = area.y;
-
-					ctx.moveTo(x1, y1);
-					ctx.lineTo(x2, y2);
-					ctx.stroke();
-
-					x1 = x2;
-					y1 = y2;
-				}
+				x1 = x2;
+				y1 = y2;
 			}
 		})
+	}
+
+	function drawLine(x1, y1, x2, y2){
+//		ctx.save();
+//		if(arguments.length==2){
+//			saveDot = [[x1, y1]];
+//			ctx.beginPath();
+//			ctx.arc(x1, y1, a, 0, 2 * Math.PI);
+//			ctx.fill();
+//		}else {
+//			saveDot.push([x2,y2]);
+//			if(saveDot.length >= 3){
+//				ctx.beginPath();
+//				ctx.moveTo(saveDot[0][0], saveDot[0][1]);
+//				ctx.quadraticCurveTo(saveDot[1][0], saveDot[1][1], saveDot[2][0], saveDot[2][1]);
+//				ctx.stroke();
+//				saveDot = [saveDot.pop()];
+//			}
+//		}
+//		ctx.restore();
+
+		ctx.save();
+		ctx.beginPath();
+		if(arguments.length==2){
+			ctx.arc(x1, y1, a, 0, 2 * Math.PI);
+			ctx.fill();
+		}else {
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.stroke();
+		}
+		ctx.restore();
 	}
 
 	//使用clip来达到擦除效果
