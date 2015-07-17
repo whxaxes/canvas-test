@@ -3,7 +3,8 @@
 #### 以下demo建议用`chrome`查看<br>
 
 部分在线效果：<br>
-[图片拉扯变形](http://whxaxes.github.io/canvas-test/src/Funny-demo/transform/demo1.html)，[图片3d变形](http://whxaxes.github.io/canvas-test/src/Funny-demo/transform/demo2.html)<br>
+[图片3d变形](http://whxaxes.github.io/canvas-test/src/Funny-demo/transform/demo2.html)<br>
+[图片拉扯变形](http://whxaxes.github.io/canvas-test/src/Funny-demo/transform/demo1.html)<br>
 [图片三角化(Low Poly)](http://whxaxes.github.io/canvas-test/src/Funny-demo/lowpoly/index.html)<br>
 [音频可视化(Web Audio API)](http://whxaxes.github.io/canvas-test/src/Funny-demo/musicPlayer/index.html)<br>
 [创意时钟(canvas clock)](http://whxaxes.github.io/canvas-test/src/Funny-demo/coolClock/index.html)<br>
