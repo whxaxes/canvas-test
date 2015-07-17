@@ -1,12 +1,26 @@
 //be used to create a menu.html
 
-var fs = require("fs");
+'use strict';
 
-var base = "./src/";
-var files = fs.readdirSync(base);
+const fs = require("fs");
+const path = require("path");
 
-var html = fs.readFileSync("./menu.html").toString();
-var ul_html = '\n<div class="view">';
+const base = "./src/";
+const sourcePrefix = "https://github.com/whxaxes/canvas-test/tree/gh-pages/";
+
+const files = fs.readdirSync(base);
+
+let html = fs.readFileSync("./menu.html").toString();
+let ul_html = '\n<div class="view">';
+
+//对文件夹更改进行排序
+files.sort(function(a, b){
+    let astat = fs.lstatSync(base + a);
+    let bstat = fs.lstatSync(base + b);
+
+    return bstat.mtime - astat.mtime;
+});
+
 files.forEach(function(f){
     var npath = base + f;
     var array;
@@ -14,12 +28,17 @@ files.forEach(function(f){
     if(fs.lstatSync(npath).isDirectory()){
         array = findHtml(npath);
 
+        array.sort(function(a, b){
+            return b[2].mtime - a[2].mtime
+        });
+
         if(array.length > 0){
-            ul_html += '\n<p>' + f + '</p>\n<ul class="main">\n';
+            ul_html += `\n<p>${f}</p>\n<ul class="main">\n`;
 
             array.forEach(function(p){
-                var title = /<title>(.*)<\/title>/.test(fs.readFileSync(p[0]).toString()) ? RegExp.$1 : "Document";
-                ul_html += '<li><a href="' + p[0] + '" target="_blank">' + title + '(' + p[1] + ')</a></li>\n';
+                let title = /<title>(.*)<\/title>/.test(fs.readFileSync(p[0]).toString()) ? RegExp.$1 : "Document";
+                let filedir = path.dirname(sourcePrefix+p[0]);
+                ul_html += `<li><a href="${p[0]}" target="_blank" class="demo-name" title="效果预览">${title}</a><a href="${filedir}" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>\n`;
             });
 
             ul_html += '</ul>\n';
@@ -34,19 +53,20 @@ fs.writeFileSync("./menu.html" , html);
 function findHtml(folder_path , collector){
     collector = collector || [];
 
-    folder_path += "/";
-    var files = fs.readdirSync(folder_path);
+    let files = fs.readdirSync(folder_path += "/");
+    let npath, stat;
 
     files.forEach(function(f){
-        var npath = folder_path + f;
+        npath = folder_path + f;
+        stat = fs.lstatSync(npath);
 
-        if(fs.lstatSync(npath).isDirectory()){
+        if(stat.isDirectory()){
             findHtml(npath , collector);
             return;
         }
 
-        if(/\.html$/.test(f) && !/^_/.test(f)){
-            collector.push([npath , f]);
+        if(/^[^_].+\.html/.test(f)){
+            collector.push([npath , f, stat]);
         }
     });
 

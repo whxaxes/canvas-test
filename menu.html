@@ -7,70 +7,74 @@
 </head>
 <style>
     *{font:16px "微软雅黑","宋体";margin: 0;padding: 0;}
-    .view{padding: 0 30px;}
+    .view{padding:30px;}
     h2{ text-align:center; clear:both; font-size:18px; margin:0;}
     .main{ list-style: none;}
     .main:after { clear: both; display: block; visibility: hidden; height: 0; content: ""; }
-    p{margin: 5px 0;font-size: 20px;font-weight: bold;}
-    .main li{display: inline-block;text-align: center;margin:6px;}
-    .main a{ display:inline-block; font-size:14px; line-height:30px; background:#CCC;color:#333; text-decoration:none;border: 1px solid #ccc;padding: 5px 10px;}
-    .main a:hover{border-color:#47A0DC;}
+    p{margin: 5px 0;font-size: 20px;}
+    .main li{display: inline-block;text-align: center;margin:8px;}
+    .main a{ display:inline-block; font-size:15px; line-height:36px; color:#333; text-decoration:none;border: 1px solid #ccc;padding: 5px 10px;}
+    .main a:hover{color:#47A0DC;}
+    .main .demo-source{
+        margin-left: -1px;
+        background-color: transparent;
+    }
     h3{ clear:both;}
 </style>
 <body>
 <div class="view">
-<p>3D-demo</p>
-<ul class="main">
-<li><a href="./src/3D-demo/3Dball.html" target="_blank">3D旋转球(3Dball.html)</a></li>
-<li><a href="./src/3D-demo/3Dcube.html" target="_blank">3d立方体(3Dcube.html)</a></li>
-<li><a href="./src/3D-demo/3Dcubes_1.html" target="_blank">3d多立方体——面(3Dcubes_1.html)</a></li>
-<li><a href="./src/3D-demo/3Dcubes_2.html" target="_blank">3d多立方体——线(3Dcubes_2.html)</a></li>
-<li><a href="./src/3D-demo/3Dtag.html" target="_blank">3D标签(3Dtag.html)</a></li>
-</ul>
-
 <p>Funny-demo</p>
 <ul class="main">
-<li><a href="./src/Funny-demo/clip/clip.html" target="_blank">橡皮擦效果(clip.html)</a></li>
-<li><a href="./src/Funny-demo/coolClock/index.html" target="_blank">粒子时钟(index.html)</a></li>
-<li><a href="./src/Funny-demo/lowpoly/index.html" target="_blank">LOW POLY（图片三角化）(index.html)</a></li>
-<li><a href="./src/Funny-demo/musicPlayer/index.html" target="_blank">AxesMusicPlayer(index.html)</a></li>
-<li><a href="./src/Funny-demo/shotFire/shotFire.html" target="_blank">放烟花模拟(shotFire.html)</a></li>
-<li><a href="./src/Funny-demo/transform/demo1.html" target="_blank">图像变形(demo1.html)</a></li>
-<li><a href="./src/Funny-demo/transform/demo2.html" target="_blank">图像变形-2(demo2.html)</a></li>
-</ul>
-
-<p>Game-demo</p>
-<ul class="main">
-<li><a href="./src/Game-demo/connectPipe/easyPipes.html" target="_blank">接水管游戏(easyPipes.html)</a></li>
-<li><a href="./src/Game-demo/FlppyPeople/index.html" target="_blank">游戏：FlyppyPeople(index.html)</a></li>
-<li><a href="./src/Game-demo/pintu/index.html" target="_blank">拼图游戏(index.html)</a></li>
-<li><a href="./src/Game-demo/planGame/index.html" target="_blank">飞机游戏(index.html)</a></li>
-<li><a href="./src/Game-demo/planGame/spriteTest.html" target="_blank">精灵表测试(spriteTest.html)</a></li>
-<li><a href="./src/Game-demo/runningMan/index.html" target="_blank">简单跑酷游戏(index.html)</a></li>
-<li><a href="./src/Game-demo/snooker/snooker.html" target="_blank">简易桌球游戏(snooker.html)</a></li>
-<li><a href="./src/Game-demo/vedioPintu.html" target="_blank">视频拼图(vedioPintu.html)</a></li>
-</ul>
-
-<p>Other-demo</p>
-<ul class="main">
-<li><a href="./src/Other-demo/cache/test.html" target="_blank">canvas缓存测试（有缓存，且设置canvas宽高）(test.html)</a></li>
-<li><a href="./src/Other-demo/cache/test2.html" target="_blank">canvas缓存测试(无缓存)(test2.html)</a></li>
-<li><a href="./src/Other-demo/cache/test3.html" target="_blank">canvas缓存测试（有缓存，但不设置canvas宽高）(test3.html)</a></li>
-<li><a href="./src/Other-demo/cache/test4.html" target="_blank">canvas缓存测试（有缓存，但不设置canvas宽高）(test4.html)</a></li>
-<li><a href="./src/Other-demo/clock.html" target="_blank">Canvas时钟(clock.html)</a></li>
-<li><a href="./src/Other-demo/duobianxing.html" target="_blank">绘制多边形(duobianxing.html)</a></li>
-<li><a href="./src/Other-demo/shotBall.html" target="_blank">仿重力小球(shotBall.html)</a></li>
-<li><a href="./src/Other-demo/stopWatch.html" target="_blank">秒表(stopWatch.html)</a></li>
+<li><a href="./src/Funny-demo/transform/demo2.html" target="_blank" class="demo-name" title="效果预览">图像变形-2</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/transform" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Funny-demo/transform/demo1.html" target="_blank" class="demo-name" title="效果预览">图像变形</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/transform" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Funny-demo/clip/clip.html" target="_blank" class="demo-name" title="效果预览">橡皮擦效果</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/clip" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Funny-demo/lowpoly/index.html" target="_blank" class="demo-name" title="效果预览">LOW POLY（图片三角化）</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/lowpoly" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Funny-demo/musicPlayer/index.html" target="_blank" class="demo-name" title="效果预览">AxesMusicPlayer</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/musicPlayer" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Funny-demo/shotFire/shotFire.html" target="_blank" class="demo-name" title="效果预览">放烟花模拟</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/shotFire" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Funny-demo/coolClock/index.html" target="_blank" class="demo-name" title="效果预览">粒子时钟</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Funny-demo/coolClock" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
 </ul>
 
 <p>Particle-demo</p>
 <ul class="main">
-<li><a href="./src/Particle-demo/animateStep/index.html" target="_blank">粒子动画(index.html)</a></li>
-<li><a href="./src/Particle-demo/blackhole/blackhole.html" target="_blank">黑洞吸引(blackhole.html)</a></li>
-<li><a href="./src/Particle-demo/imgdata/controlImgData.html" target="_blank">操控文字图片的数据(controlImgData.html)</a></li>
-<li><a href="./src/Particle-demo/imgdata/controlImgData2.html" target="_blank">操控字体的数据(controlImgData2.html)</a></li>
-<li><a href="./src/Particle-demo/orangutan/index.html" target="_blank">粒子成像demo(index.html)</a></li>
-<li><a href="./src/Particle-demo/test.html" target="_blank">粒子发射器(test.html)</a></li>
+<li><a href="./src/Particle-demo/imgdata/controlImgData2.html" target="_blank" class="demo-name" title="效果预览">操控字体的数据</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Particle-demo/imgdata" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Particle-demo/blackhole/blackhole.html" target="_blank" class="demo-name" title="效果预览">黑洞吸引</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Particle-demo/blackhole" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Particle-demo/orangutan/index.html" target="_blank" class="demo-name" title="效果预览">粒子成像demo</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Particle-demo/orangutan" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Particle-demo/test.html" target="_blank" class="demo-name" title="效果预览">粒子发射器</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Particle-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Particle-demo/animateStep/index.html" target="_blank" class="demo-name" title="效果预览">粒子动画</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Particle-demo/animateStep" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Particle-demo/imgdata/controlImgData.html" target="_blank" class="demo-name" title="效果预览">操控文字图片的数据</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Particle-demo/imgdata" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+</ul>
+
+<p>Game-demo</p>
+<ul class="main">
+<li><a href="./src/Game-demo/connectPipe/easyPipes.html" target="_blank" class="demo-name" title="效果预览">接水管游戏</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/connectPipe" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/snooker/snooker.html" target="_blank" class="demo-name" title="效果预览">简易桌球游戏</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/snooker" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/vedioPintu.html" target="_blank" class="demo-name" title="效果预览">视频拼图</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/planGame/spriteTest.html" target="_blank" class="demo-name" title="效果预览">精灵表测试</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/planGame" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/runningMan/index.html" target="_blank" class="demo-name" title="效果预览">简单跑酷游戏</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/runningMan" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/planGame/index.html" target="_blank" class="demo-name" title="效果预览">飞机游戏</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/planGame" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/FlppyPeople/index.html" target="_blank" class="demo-name" title="效果预览">游戏：FlyppyPeople</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/FlppyPeople" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Game-demo/pintu/index.html" target="_blank" class="demo-name" title="效果预览">拼图游戏</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Game-demo/pintu" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+</ul>
+
+<p>Other-demo</p>
+<ul class="main">
+<li><a href="./src/Other-demo/cache/test.html" target="_blank" class="demo-name" title="效果预览">canvas缓存测试（有缓存，且设置canvas宽高）</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo/cache" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/cache/test2.html" target="_blank" class="demo-name" title="效果预览">canvas缓存测试(无缓存)</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo/cache" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/cache/test3.html" target="_blank" class="demo-name" title="效果预览">canvas缓存测试（有缓存，但不设置canvas宽高）</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo/cache" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/cache/test4.html" target="_blank" class="demo-name" title="效果预览">canvas缓存测试（有缓存，但不设置canvas宽高）</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo/cache" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/clock.html" target="_blank" class="demo-name" title="效果预览">Canvas时钟</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/duobianxing.html" target="_blank" class="demo-name" title="效果预览">绘制多边形</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/shotBall.html" target="_blank" class="demo-name" title="效果预览">仿重力小球</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/Other-demo/stopWatch.html" target="_blank" class="demo-name" title="效果预览">秒表</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/Other-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+</ul>
+
+<p>3D-demo</p>
+<ul class="main">
+<li><a href="./src/3D-demo/3Dball.html" target="_blank" class="demo-name" title="效果预览">3D旋转球</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/3D-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/3D-demo/3Dcube.html" target="_blank" class="demo-name" title="效果预览">3d立方体</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/3D-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/3D-demo/3Dcubes_1.html" target="_blank" class="demo-name" title="效果预览">3d多立方体——面</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/3D-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/3D-demo/3Dcubes_2.html" target="_blank" class="demo-name" title="效果预览">3d多立方体——线</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/3D-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
+<li><a href="./src/3D-demo/3Dtag.html" target="_blank" class="demo-name" title="效果预览">3D标签</a><a href="https://github.com/whxaxes/canvas-test/tree/gh-pages/./src/3D-demo" class="demo-source" target="_blank" title="点击查看源码">源码</a></li>
 </ul>
 </div>
 </body>

@@ -160,26 +160,26 @@
             c = d.ez - d.z;
             d.z += c * 0.1;
 
-            //c = d.ez - d.z;
-            //c = c < 0 ? 0 : c;
-            //if(d.ez >= d.z){
-            //    if(!d.up) d.a = 0;
-            //
-            //    d.up = true;
-            //    d.a += c*0.01;
-            //
-            //    d.z += d.a;
-            //
-            //    d.z = d.z >= d.ez ? d.ez : d.z
-            //}else {
-            //    if(d.up) d.a = 0;
-            //
-            //    d.up = false;
-            //    d.a -= 1;
-            //
-            //    d.z += d.a;
-            //    d.z = d.z <= d.ez ? d.ez : d.z
-            //}
+//            c = d.ez - d.z;
+//            c = c < 0 ? 0 : c;
+//            if(d.ez >= d.z){
+//                if(!d.up) d.a = 0;
+//
+//                d.up = true;
+//                d.a += c*0.05;
+//
+//                d.z += d.a;
+//
+//                d.z = d.z >= d.ez ? d.ez : d.z
+//            }else {
+//                if(d.up) d.a = 0;
+//
+//                d.up = false;
+//                d.a -= 1;
+//
+//                d.z += d.a;
+//                d.z = d.z <= d.ez ? d.ez : d.z
+//            }
 
             scale = focallength / (focallength + d.z);
 
