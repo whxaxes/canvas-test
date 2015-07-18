@@ -52,8 +52,8 @@ class Particle
     @x += @vx;
     @y += @vy;
 
-    @vx = if 0 < @x < canvas.width+@r*2 then @vx else -@vx*0.98;
-    @vy = if 0 < @y < canvas.height+@r*2 then @vy else -@vy*0.98;
+    @vx = if 0 <= @x <= canvas.width+@r*2 then @vx else -@vx*0.98;
+    @vy = if 0 <= @y <= canvas.height+@r*2 then @vy else -@vy*0.98;
 
   attract:->
     @ax = @ay = 0;
@@ -195,7 +195,7 @@ canvas.onmouseup = canvas.onmouseout = (e)->
 
 #执行动画
 execAnimate = ->
-  for i in [1...500]
+  for i in [1...1000]
     particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(255,255,255,.5)"))
   animate();
 

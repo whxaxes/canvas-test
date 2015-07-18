@@ -67,8 +67,8 @@
       this.oldy = this.y;
       this.x += this.vx;
       this.y += this.vy;
-      this.vx = (0 < (ref = this.x) && ref < canvas.width + this.r * 2) ? this.vx : -this.vx * 0.98;
-      return this.vy = (0 < (ref1 = this.y) && ref1 < canvas.height + this.r * 2) ? this.vy : -this.vy * 0.98;
+      this.vx = (0 <= (ref = this.x) && ref <= canvas.width + this.r * 2) ? this.vx : -this.vx * 0.98;
+      return this.vy = (0 <= (ref1 = this.y) && ref1 <= canvas.height + this.r * 2) ? this.vy : -this.vy * 0.98;
     };
 
     Particle.prototype.attract = function() {
@@ -249,7 +249,7 @@
 
   execAnimate = function() {
     var i, k;
-    for (i = k = 1; k < 500; i = ++k) {
+    for (i = k = 1; k < 1000; i = ++k) {
       particles.push(new Particle({
         x: canvas.width * Math.random(),
         y: canvas.height * Math.random(),
