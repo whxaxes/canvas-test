@@ -20,10 +20,18 @@
 <body>
 	<div >
 		<canvas id='cas' width="800" height="600">浏览器不支持canvas</canvas>
-		<div style="text-align:center">100个圈圈都卡爆了</div>
+		<div style="text-align:center">不使用缓存，100个圈圈就开始不流畅了</div>
 	</div>
 
+	<script src="../../public/stats.min.js"></script>
 	<script>
+		var stats = new Stats();
+		stats.setMode(0);
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.right = '0px';
+		stats.domElement.style.top = '0px';
+		document.body.appendChild( stats.domElement );
+
 		var testBox = function(){
 			var canvas = document.getElementById("cas"),
 				ctx = canvas.getContext('2d'),
@@ -128,6 +136,7 @@
 				loop:function(){
 					var _this = this;
 					this.update();
+					stats.update();
 					RAF(function(){
 						_this.loop();
 					})

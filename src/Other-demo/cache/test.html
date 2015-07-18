@@ -23,7 +23,15 @@
 		<div style="text-align:center">使用了缓存，1000个圈圈对象也不卡</div>
 	</div>
 
+	<script src="../../public/stats.min.js"></script>
 	<script>
+		var stats = new Stats();
+		stats.setMode(0);
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.right = '0px';
+		stats.domElement.style.top = '0px';
+		document.body.appendChild( stats.domElement );
+
 		var testBox = function(){
 			var canvas = document.getElementById("cas"),
 				ctx = canvas.getContext('2d'),
@@ -128,6 +136,7 @@
 				loop:function(){
 					var _this = this;
 					this.update();
+					stats.update();
 					RAF(function(){
 						_this.loop();
 					})
@@ -137,7 +146,7 @@
 					this.init();
 					this.loop();
 				}
-			}
+			};
 
 			window.RAF = (function(){
 				return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };

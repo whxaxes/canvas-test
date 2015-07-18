@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<style>
+		body{margin: 0;padding:0;-moz-user-select: none;}
+		.tips{text-align: center;}
+		#cas{margin:auto;display: block;cursor: move;}
+	</style>
+	<title>3d多立方体</title>
+</head>
+<body onselectstart="return false">
+<p class="tips">鼠标拖动试试~</p>
+<canvas id="cas" width="700" height="700">您的浏览器不支持canvas</canvas>
+
+<script src="../public/stats.min.js"></script>
+<script>
+	'use strict';
+
+	var stats = new Stats();
+	stats.setMode(0);
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.right = '0px';
+	stats.domElement.style.top = '0px';
+	document.body.appendChild( stats.domElement );
+
+	var canvas = document.getElementById("cas");
+	var ctx = canvas.getContext("2d");
+	var fallLength = 500 ,
+		centerX = canvas.width/2 ,
+		centerY = canvas.height/2 ,
+		cubeLength = 200;
+
+	window.RAF = (function(){
+		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
+	})();
+
+	var Cube = function(opt){
+		this.length = cubeLength/3;
+
+		//存放所有点坐标
+		this.vectors = [];
+
+		//存放面
+		this.faces = [];
+
+		this.init(opt);
+	};
+
+	Cube.prototype = {
+		init:function(opt){
+			this.xpos = opt.x;
+			this.ypos = opt.y;
+			this.zpos = opt.z;
+
+			for(var i=0;i<8;i++){
+				this.vectors.push({x:0,y:0,z:0})
+			}
+
+			this.setVector();
+
+			this.faces.push([this.vectors[0] , this.vectors[1] , this.vectors[3] , this.vectors[2]]);
+			this.faces.push([this.vectors[2] , this.vectors[3] , this.vectors[5] , this.vectors[4]]);
+			this.faces.push([this.vectors[4] , this.vectors[5] , this.vectors[7] , this.vectors[6]]);
+			this.faces.push([this.vectors[6] , this.vectors[7] , this.vectors[1] , this.vectors[0]]);
+			this.faces.push([this.vectors[1] , this.vectors[3] , this.vectors[5] , this.vectors[7]]);
+			this.faces.push([this.vectors[0] , this.vectors[2] , this.vectors[4] , this.vectors[6]]);
+		},
+
+		setVector:function(){
+			var x = this.xpos,
+				y = this.ypos,
+				z = this.zpos,
+				dis = this.length/2;
+
+			this.vectors[0].x = x - dis;
+			this.vectors[0].y = y - dis;
+			this.vectors[0].z = z + dis;
+
+			this.vectors[1].x = x - dis;
+			this.vectors[1].y = y + dis;
+			this.vectors[1].z = z + dis;
+
+			this.vectors[2].x = x + dis;
+			this.vectors[2].y = y - dis;
+			this.vectors[2].z = z + dis;
+
+			this.vectors[3].x = x + dis;
+			this.vectors[3].y = y + dis;
+			this.vectors[3].z = z + dis;
+
+			this.vectors[4].x = x + dis;
+			this.vectors[4].y = y - dis;
+			this.vectors[4].z = z - dis;
+
+			this.vectors[5].x = x + dis;
+			this.vectors[5].y = y + dis;
+			this.vectors[5].z = z - dis;
+
+			this.vectors[6].x = x - dis;
+			this.vectors[6].y = y - dis;
+			this.vectors[6].z = z - dis;
+
+			this.vectors[7].x = x - dis;
+			this.vectors[7].y = y + dis;
+			this.vectors[7].z = z - dis;
+		},
+
+		rotate:function(angleX , angleY){
+			var xcos = Math.cos(angleX);
+			var xsin = Math.sin(angleX);
+			var ycos = Math.cos(angleY);
+			var ysin = Math.sin(angleY);
+
+			var x, y, z;
+			var nx, ny, nz;
+			var xa = 0, ya = 0, za = 0;
+
+			//计算旋转后的所有点坐标位置
+			this.vectors.forEach(function(vector){
+				x = vector.x;
+				y = vector.y;
+				z = vector.z;
+
+				//绕X轴旋转
+				ny = y * xcos - z * xsin;
+				nz = z * xcos + y * xsin;
+
+				//绕Y轴旋转
+				nx = x * ycos - nz * ysin;
+				nz = nz * ycos + x * ysin;
+
+				vector.x = nx;
+				vector.y = ny;
+				vector.z = nz;
+
+				xa += nx;
+				ya += ny;
+				za += nz;
+			});
+
+			//更新中心点坐标
+			this.xpos = xa/this.vectors.length;
+			this.ypos = ya/this.vectors.length;
+			this.zpos = za/this.vectors.length;
+		}
+	};
+
+	function drawFace(face){
+		if(!face.color){
+			face.color = "rgba(" + parseInt(getRandom(128, 255)) + "," + parseInt(getRandom(128, 255)) + "," + parseInt(getRandom(128, 255)) + ",1)";
+		}
+
+		ctx.save();
+		ctx.beginPath();
+		ctx.moveTo(get2d(face[0]).x, get2d(face[0]).y);
+		ctx.lineTo(get2d(face[1]).x, get2d(face[1]).y);
+		ctx.lineTo(get2d(face[2]).x, get2d(face[2]).y);
+		ctx.lineTo(get2d(face[3]).x, get2d(face[3]).y);
+		ctx.closePath();
+
+		ctx.fillStyle = face.color;
+		ctx.fill();
+	}
+
+	function get2d(vector){
+		var scale = fallLength / (fallLength + vector.z);
+		var x = centerX + vector.x * scale;
+		var y = centerY + vector.y * scale;
+		return {x: x, y: y};
+	}
+
+	//鼠标事件绑定
+	canvas.onmousedown = function(e){
+		var angleY,angleX;
+
+		e = e || window.event;
+		var x1 = e.clientX - canvas.offsetLeft - centerX;
+		var y1 = e.clientY - canvas.offsetTop - centerY;
+
+		var xc = 0, yc = 0;
+
+		cubeList.forEach(function(cube){
+			cube.inertia = false;
+		});
+
+		window.onmousemove = function(e){
+			e = e || window.event;
+			var x2 = e.clientX - canvas.offsetLeft - centerX;
+			var y2 = e.clientY - canvas.offsetTop - centerY;
+
+			xc = x2 - x1;
+			yc = y2 - y1;
+
+			angleY = xc * 0.005;
+			angleX = yc * 0.005;
+
+			cubeList.forEach(function(cube){
+				cube.rotate(angleX, angleY);
+			});
+
+			x1 = x2;
+			y1 = y2;
+		};
+
+		window.mouseleave = window.onmouseup = function(e){
+			window.onmousemove = null;
+
+			cubeList.forEach(function(cube){
+				cube.inertia = true;
+				cube.toAngle = {
+					x : yc/2,
+					y : xc/2
+				};
+			});
+		}
+	};
+
+	/**
+	 * 动画初始化
+	 */
+	var cubeList = [],
+		cubeFace = [],
+		distance = 30;
+	function initAnimate(){
+		var dis = cubeLength / 3 + distance;
+		var cube;
+
+		//三层正方体
+		for (var l1 = -dis; l1 <= dis; l1 += dis) {
+			for (var l2 = -dis; l2 <= dis; l2 += dis) {
+				for (var l3 = -dis; l3 <= dis; l3 += dis) {
+					cube = new Cube({x: l1, y: l2, z: l3});
+					cubeFace = cubeFace.concat(cube.faces);
+					cubeList.push(cube);
+
+					cube.inertia = true;
+					cube.toAngle = {
+						x : 0,
+						y :	10
+					}
+				}
+			}
+		}
+
+		animate();
+	}
+
+	function animate(){
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+
+		cubeFace.sort(function(a, b){
+			var indexa = (a[0].z + a[1].z + a[2].z + a[3].z)/4;
+			var indexb = (b[0].z + b[1].z + b[2].z + b[3].z)/4;
+
+			return indexb - indexa;
+		});
+
+		//遍历cube判断是否需要旋转
+		cubeList.forEach(function(cube){
+			if(cube.inertia){
+				var ax = cube.toAngle.x * 0.02;
+				var ay = cube.toAngle.y * 0.02;
+
+				cube.toAngle.x -= ax;
+				cube.toAngle.y -= ay;
+
+				cube.rotate(ax, ay);
+			}
+		});
+
+		cubeFace.forEach(function(face){
+			drawFace(face);
+		});
+
+		stats.update();
+
+		RAF(animate);
+	}
+
+	function getRandom(a, b) {
+		return Math.random() * (b - a) + a;
+	}
+
+	initAnimate();
+</script>
+</body>
+</html>
