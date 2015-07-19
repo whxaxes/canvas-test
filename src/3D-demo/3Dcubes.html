@@ -54,7 +54,7 @@
     canvas.height = document.body.offsetHeight;
 
 	var ctx = canvas.getContext("2d");
-	var fallLength = 500 ,
+	var fallLength = 1000 ,
 		centerX = canvas.width/2 ,
 		centerY = canvas.height/2 ,
 		cubeLength = 200;
@@ -282,7 +282,7 @@
 	 */
 	var cubeList = [],
 		cubeFace = [],
-		distance = 10;
+		distance = 300;
 	function initAnimate(){
 		var dis = cubeLength / 3 + distance;
 		var cube;
@@ -295,11 +295,11 @@
 					cubeFace = cubeFace.concat(cube.faces);
 					cubeList.push(cube);
 
-//					cube.inertia = true;
-//					cube.toAngle = {
-//						x : 0,
-//						y :	10
-//					}
+					cube.inertia = true;
+					cube.toAngle = {
+						x : 2,
+						y :	10
+					}
 				}
 			}
 		}
