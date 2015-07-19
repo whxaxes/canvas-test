@@ -3,15 +3,39 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<style>
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
 		body{margin: 0;padding:0;-moz-user-select: none;}
-		.tips{text-align: center;}
-		#cas{margin:auto;display: block;cursor: move;}
+        .view{
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+		.tips{
+            position: relative;
+            text-align: center;
+            z-index: 999;
+        }
+		#cas{
+            position: absolute;
+            display: block;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            cursor: move;
+        }
 	</style>
 	<title>3d多立方体</title>
 </head>
 <body onselectstart="return false">
-<p class="tips">鼠标拖动试试~</p>
-<canvas id="cas" width="700" height="700">您的浏览器不支持canvas</canvas>
+<div class="view">
+    <p class="tips">鼠标拖动立方体转动，滚动鼠标滚轮缩放~</p>
+    <canvas id="cas" width="700" height="600">您的浏览器不支持canvas</canvas>
+</div>
 
 <script src="../public/stats.min.js"></script>
 <script>
@@ -25,6 +49,10 @@
 	document.body.appendChild( stats.domElement );
 
 	var canvas = document.getElementById("cas");
+
+    canvas.width = document.body.offsetWidth;
+    canvas.height = document.body.offsetHeight;
+
 	var ctx = canvas.getContext("2d");
 	var fallLength = 500 ,
 		centerX = canvas.width/2 ,
@@ -39,7 +67,7 @@
 		this.length = cubeLength/3;
 
 		//存放所有点坐标
-		this.vectors = [];
+		this.dots = [];
 
 		//存放面
 		this.faces = [];
@@ -54,17 +82,17 @@
 			this.zpos = opt.z;
 
 			for(var i=0;i<8;i++){
-				this.vectors.push({x:0,y:0,z:0})
+				this.dots.push({x:0,y:0,z:0})
 			}
 
 			this.setVector();
 
-			this.faces.push([this.vectors[0] , this.vectors[1] , this.vectors[3] , this.vectors[2]]);
-			this.faces.push([this.vectors[2] , this.vectors[3] , this.vectors[5] , this.vectors[4]]);
-			this.faces.push([this.vectors[4] , this.vectors[5] , this.vectors[7] , this.vectors[6]]);
-			this.faces.push([this.vectors[6] , this.vectors[7] , this.vectors[1] , this.vectors[0]]);
-			this.faces.push([this.vectors[1] , this.vectors[3] , this.vectors[5] , this.vectors[7]]);
-			this.faces.push([this.vectors[0] , this.vectors[2] , this.vectors[4] , this.vectors[6]]);
+			this.faces.push([this.dots[0] , this.dots[1] , this.dots[3] , this.dots[2]]);
+			this.faces.push([this.dots[2] , this.dots[3] , this.dots[5] , this.dots[4]]);
+			this.faces.push([this.dots[4] , this.dots[5] , this.dots[7] , this.dots[6]]);
+			this.faces.push([this.dots[6] , this.dots[7] , this.dots[1] , this.dots[0]]);
+			this.faces.push([this.dots[1] , this.dots[3] , this.dots[5] , this.dots[7]]);
+			this.faces.push([this.dots[0] , this.dots[2] , this.dots[4] , this.dots[6]]);
 		},
 
 		setVector:function(){
@@ -73,38 +101,50 @@
 				z = this.zpos,
 				dis = this.length/2;
 
-			this.vectors[0].x = x - dis;
-			this.vectors[0].y = y - dis;
-			this.vectors[0].z = z + dis;
+			this.dots[0].x = x - dis;
+			this.dots[0].y = y - dis;
+			this.dots[0].z = z + dis;
 
-			this.vectors[1].x = x - dis;
-			this.vectors[1].y = y + dis;
-			this.vectors[1].z = z + dis;
+			this.dots[1].x = x - dis;
+			this.dots[1].y = y + dis;
+			this.dots[1].z = z + dis;
 
-			this.vectors[2].x = x + dis;
-			this.vectors[2].y = y - dis;
-			this.vectors[2].z = z + dis;
+			this.dots[2].x = x + dis;
+			this.dots[2].y = y - dis;
+			this.dots[2].z = z + dis;
 
-			this.vectors[3].x = x + dis;
-			this.vectors[3].y = y + dis;
-			this.vectors[3].z = z + dis;
+			this.dots[3].x = x + dis;
+			this.dots[3].y = y + dis;
+			this.dots[3].z = z + dis;
 
-			this.vectors[4].x = x + dis;
-			this.vectors[4].y = y - dis;
-			this.vectors[4].z = z - dis;
+			this.dots[4].x = x + dis;
+			this.dots[4].y = y - dis;
+			this.dots[4].z = z - dis;
 
-			this.vectors[5].x = x + dis;
-			this.vectors[5].y = y + dis;
-			this.vectors[5].z = z - dis;
+			this.dots[5].x = x + dis;
+			this.dots[5].y = y + dis;
+			this.dots[5].z = z - dis;
 
-			this.vectors[6].x = x - dis;
-			this.vectors[6].y = y - dis;
-			this.vectors[6].z = z - dis;
+			this.dots[6].x = x - dis;
+			this.dots[6].y = y - dis;
+			this.dots[6].z = z - dis;
 
-			this.vectors[7].x = x - dis;
-			this.vectors[7].y = y + dis;
-			this.vectors[7].z = z - dis;
+			this.dots[7].x = x - dis;
+			this.dots[7].y = y + dis;
+			this.dots[7].z = z - dis;
 		},
+
+        move:function(xc, yc, zc){
+            this.xpos += xc;
+            this.ypos += yc;
+            this.zpos += zc;
+
+            this.dots.forEach(function(dot){
+                dot.x += xc;
+                dot.y += yc;
+                dot.z += zc;
+            })
+        },
 
 		rotate:function(angleX , angleY){
 			var xcos = Math.cos(angleX);
@@ -117,10 +157,10 @@
 			var xa = 0, ya = 0, za = 0;
 
 			//计算旋转后的所有点坐标位置
-			this.vectors.forEach(function(vector){
-				x = vector.x;
-				y = vector.y;
-				z = vector.z;
+			this.dots.forEach(function(dot){
+				x = dot.x;
+				y = dot.y;
+				z = dot.z;
 
 				//绕X轴旋转
 				ny = y * xcos - z * xsin;
@@ -130,9 +170,9 @@
 				nx = x * ycos - nz * ysin;
 				nz = nz * ycos + x * ysin;
 
-				vector.x = nx;
-				vector.y = ny;
-				vector.z = nz;
+				dot.x = nx;
+				dot.y = ny;
+				dot.z = nz;
 
 				xa += nx;
 				ya += ny;
@@ -140,9 +180,9 @@
 			});
 
 			//更新中心点坐标
-			this.xpos = xa/this.vectors.length;
-			this.ypos = ya/this.vectors.length;
-			this.zpos = za/this.vectors.length;
+			this.xpos = xa/this.dots.length;
+			this.ypos = ya/this.dots.length;
+			this.zpos = za/this.dots.length;
 		}
 	};
 
@@ -163,12 +203,26 @@
 		ctx.fill();
 	}
 
-	function get2d(vector){
-		var scale = fallLength / (fallLength + vector.z);
-		var x = centerX + vector.x * scale;
-		var y = centerY + vector.y * scale;
+	function get2d(dot){
+		var scale = fallLength / (fallLength + dot.z);
+		var x = centerX + dot.x * scale;
+		var y = centerY + dot.y * scale;
 		return {x: x, y: y};
 	}
+
+    window.onmousewheel = function(e){
+        cubeList.forEach(function(cube){
+            var nx = cube.xpos/10;
+            var ny = cube.ypos/10;
+            var nz = cube.zpos/10;
+
+            nx = e.wheelDelta > 0 ? nx : -nx;
+            ny = e.wheelDelta > 0 ? ny : -ny;
+            nz = e.wheelDelta > 0 ? nz : -nz;
+
+            cube.move(nx, ny, nz);
+        })
+    };
 
 	//鼠标事件绑定
 	canvas.onmousedown = function(e){
@@ -179,6 +233,8 @@
 		var y1 = e.clientY - canvas.offsetTop - centerY;
 
 		var xc = 0, yc = 0;
+        var date = new Date();
+        var dc = 10000;
 
 		cubeList.forEach(function(cube){
 			cube.inertia = false;
@@ -188,9 +244,11 @@
 			e = e || window.event;
 			var x2 = e.clientX - canvas.offsetLeft - centerX;
 			var y2 = e.clientY - canvas.offsetTop - centerY;
+            var date2 = new Date();
 
 			xc = x2 - x1;
 			yc = y2 - y1;
+
 
 			angleY = xc * 0.005;
 			angleX = yc * 0.005;
@@ -201,16 +259,19 @@
 
 			x1 = x2;
 			y1 = y2;
+            date = date2;
 		};
 
 		window.mouseleave = window.onmouseup = function(e){
 			window.onmousemove = null;
+            var date2 = new Date();
+            var dc = (date2-date)||1;
 
 			cubeList.forEach(function(cube){
 				cube.inertia = true;
 				cube.toAngle = {
-					x : yc/2,
-					y : xc/2
+					x : yc/dc,
+					y : xc/dc
 				};
 			});
 		}
@@ -221,7 +282,7 @@
 	 */
 	var cubeList = [],
 		cubeFace = [],
-		distance = 30;
+		distance = 10;
 	function initAnimate(){
 		var dis = cubeLength / 3 + distance;
 		var cube;
@@ -234,11 +295,11 @@
 					cubeFace = cubeFace.concat(cube.faces);
 					cubeList.push(cube);
 
-					cube.inertia = true;
-					cube.toAngle = {
-						x : 0,
-						y :	10
-					}
+//					cube.inertia = true;
+//					cube.toAngle = {
+//						x : 0,
+//						y :	10
+//					}
 				}
 			}
 		}
