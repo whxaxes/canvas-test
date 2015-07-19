@@ -57,15 +57,13 @@
 	var fallLength = 1000 ,
 		centerX = canvas.width/2 ,
 		centerY = canvas.height/2 ,
-		cubeLength = 200;
+		cubeWidth = 100;
 
 	window.RAF = (function(){
 		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
 	})();
 
 	var Cube = function(opt){
-		this.length = cubeLength/3;
-
 		//存放所有点坐标
 		this.dots = [];
 
@@ -80,6 +78,7 @@
 			this.xpos = opt.x;
 			this.ypos = opt.y;
 			this.zpos = opt.z;
+            this.w = opt.w;
 
 			for(var i=0;i<8;i++){
 				this.dots.push({x:0,y:0,z:0})
@@ -99,7 +98,7 @@
 			var x = this.xpos,
 				y = this.ypos,
 				z = this.zpos,
-				dis = this.length/2;
+                dis = this.w / 2;
 
 			this.dots[0].x = x - dis;
 			this.dots[0].y = y - dis;
@@ -198,6 +197,9 @@
 		ctx.lineTo(get2d(face[2]).x, get2d(face[2]).y);
 		ctx.lineTo(get2d(face[3]).x, get2d(face[3]).y);
 		ctx.closePath();
+//
+//        ctx.strokeStyle = "#fff";
+//        ctx.stroke();
 
 		ctx.fillStyle = face.color;
 		ctx.fill();
@@ -249,7 +251,6 @@
 			xc = x2 - x1;
 			yc = y2 - y1;
 
-
 			angleY = xc * 0.005;
 			angleX = yc * 0.005;
 
@@ -282,16 +283,21 @@
 	 */
 	var cubeList = [],
 		cubeFace = [],
-		distance = 300;
+		distance = 200,
+        level = 3,
+        cube_w = 100;
 	function initAnimate(){
-		var dis = cubeLength / 3 + distance;
-		var cube;
+        var cw = cube_w/level;
+		var dis = cw + distance;
+        var minmax = (level - 1) * dis;
+
+        var cube;
 
 		//三层正方体
-		for (var l1 = -dis; l1 <= dis; l1 += dis) {
-			for (var l2 = -dis; l2 <= dis; l2 += dis) {
-				for (var l3 = -dis; l3 <= dis; l3 += dis) {
-					cube = new Cube({x: l1, y: l2, z: l3});
+		for (var l1 = -minmax; l1 <= minmax; l1 += dis) {
+			for (var l2 = -minmax; l2 <= minmax; l2 += dis) {
+				for (var l3 = -minmax; l3 <= minmax; l3 += dis) {
+					cube = new Cube({x: l1, y: l2, z: l3, w: cw});
 					cubeFace = cubeFace.concat(cube.faces);
 					cubeList.push(cube);
 
