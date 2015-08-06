@@ -60,7 +60,10 @@
         })
     }
 
-    animate();
+    setTimeout(function(){
+        animate();
+    }, 100);
+
     function animate(){
         ctx.clearRect(0,0,canvas.width, canvas.height);
         var ndots  = [warea].concat(dots);
