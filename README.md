@@ -3,6 +3,9 @@
 #### 以下demo建议用`chrome`查看<br>
 
 部分在线效果：<br>
+[网状网站背景](http://whxaxes.github.io/canvas-test/src//Funny-demo/netparticle/net_1.html)，
+[查看代码](https://github.com/whxaxes/canvas-test/tree/gh-pages/src//Funny-demo/netparticle)<br>
+
 [图片3d变形](http://whxaxes.github.io/canvas-test/src/Funny-demo/transform/demo2.html)，
 [查看代码](https://github.com/whxaxes/canvas-test/tree/gh-pages/src/Funny-demo/transform)<br>
 
