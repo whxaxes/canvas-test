@@ -16,7 +16,7 @@ let html = fs.readFileSync('./menu.html').toString();
 let readme = fs.readFileSync('./README.md').toString();
 
 let ul_html = '<div class="view">';
-let md_value = '| 标题 |  |\n | :-------- | :--------:|\n';
+let md_value = '| 标题 |  |\n| :-------- | :--------:|\n';
 
 const mlList = [
   'Funny-demo',

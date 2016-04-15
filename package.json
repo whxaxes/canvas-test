@@ -7,5 +7,7 @@
   },
   "dependencies": {
     "easy-router": "^2.0.10"
-  }
+  },
+  "author": "wanghx",
+  "license": "MIT"
 }
