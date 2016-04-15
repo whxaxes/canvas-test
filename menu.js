@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const base = 'src/';
+const pagePreFix = 'http://whxaxes.github.io/canvas-test/';
 const sourcePrefix = 'https://github.com/whxaxes/canvas-test/tree/master/';
 
 const files = fs.readdirSync(base);
@@ -48,16 +49,18 @@ mlList.forEach(function(f) {
 
     array.forEach(function(p) {
       const title = /<title>(.*)<\/title>/.test(fs.readFileSync(p[0]).toString()) ? RegExp.$1 : 'Document';
+
+      const address = path.join(pagePreFix, p[0]);
       const filedir = path.dirname(path.join(sourcePrefix, p[0]));
 
       ul_html += `
           <li>
-            <a href='${p[0]}' target='_blank' class='demo-name' title='效果预览'>${title}</a>
+            <a href='${address}' target='_blank' class='demo-name' title='效果预览'>${title}</a>
             <a href='${filedir}' class='demo-source' target='_blank' title='点击查看源码'>源码</a>
           </li>
       `;
 
-      md_value += `| [${title}](${p[0]}) | [查看代码](${filedir}) |\r`
+      md_value += `| [${title}](${address}) | [查看代码](${filedir}) |\r`
     });
 
     ul_html += '</ul>';
