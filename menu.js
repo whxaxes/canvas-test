@@ -8,8 +8,8 @@ const fs = require('fs');
 const path = require('path');
 
 const base = 'src/';
-const pagePreFix = 'http://whxaxes.github.io/canvas-test';
-const sourcePrefix = 'https://github.com/whxaxes/canvas-test/tree/master';
+const pagePreFix = 'http://whxaxes.github.io/canvas-test/';
+const sourcePrefix = 'https://github.com/whxaxes/canvas-test/tree/master/';
 
 const files = fs.readdirSync(base);
 
