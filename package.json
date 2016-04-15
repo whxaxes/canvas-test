@@ -1,6 +1,10 @@
 {
   "name": "test",
   "version": "0.1.0",
+  "scripts": {
+    "build": "node menu.js",
+    "server": "node app.js"
+  },
   "dependencies": {
     "easy-router": "^2.0.10"
   }
