@@ -55,8 +55,7 @@ mlList.forEach(function(f) {
 
       ul_html += `
           <li>
-            <a href='${address}' target='_blank' class='demo-name' title='效果预览'>${title}</a>
-            <a href='${filedir}' class='demo-source' target='_blank' title='点击查看源码'>源码</a>
+            <a href='${p[0]}' target='_blank' class='demo-name' title='效果预览'>${title}</a><a href='${filedir}' class='demo-source' target='_blank' title='点击查看源码'>源码</a>
           </li>
       `;
 
