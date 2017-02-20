@@ -19,6 +19,7 @@
 			font-size: 15px;
 			font-family: "微软雅黑";
 			font-weight: bold;
+			will-change: transform;
 		}
 		.tag:hover{border:1px solid #666;}
 	</style>
@@ -109,13 +110,13 @@
 		}
 
 		function animate(){
-			setInterval(function(){
-				rotateX();
-				rotateY();
-				tags.forEach(function(){
-					this.move();
-				})
-			} , 17)
+			rotateX();
+			rotateY();
+			tags.forEach(function(){
+				this.move();
+			});
+
+			requestAnimationFrame(animate);
 		}
 
 		if("addEventListener" in window){
@@ -169,12 +170,13 @@
 			move:function(){
 				var scale = fallLength/(fallLength-this.z);
 				var alpha = (this.z+RADIUS)/(2*RADIUS);
-				this.ele.style.fontSize = 15 * scale + "px";
+				var left = this.x + CX - this.ele.offsetWidth/2 +"px";
+				var top = this.y + CY - this.ele.offsetHeight/2 +"px";
+				var transform = 'translate(' + left + ', ' + top + ') scale(' + scale + ')';
 				this.ele.style.opacity = alpha+0.5;
-				this.ele.style.filter = "alpha(opacity = "+(alpha+0.5)*100+")";
 				this.ele.style.zIndex = parseInt(scale*100);
-				this.ele.style.left = this.x + CX - this.ele.offsetWidth/2 +"px";
-				this.ele.style.top = this.y + CY - this.ele.offsetHeight/2 +"px";
+				this.ele.style.transform = transform;
+				this.ele.style.webkitTransform = transform;
 			}
 		}
 		innit();
