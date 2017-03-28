@@ -21,9 +21,11 @@ npm run build
 
 ## 在线效果列表
 > 建议用`chrome`查看
+
 [placeholder]:p
+
 | 效果预览链接 | 源码 |
-| :-------- | :--------:|
+| :--------: | :--------: |
 | [可视化音乐播放器](http://whxaxes.github.io/canvas-test/src/Funny-demo/musicPlayer/index.html) | [查看代码](https://github.com/whxaxes/canvas-test/tree/master/src/Funny-demo/musicPlayer) |
 | [放烟花模拟](http://whxaxes.github.io/canvas-test/src/Funny-demo/shotFire/shotFire.html) | [查看代码](https://github.com/whxaxes/canvas-test/tree/master/src/Funny-demo/shotFire) |
 | [网状粒子效果1](http://whxaxes.github.io/canvas-test/src/Funny-demo/netparticle/net_1.html) | [查看代码](https://github.com/whxaxes/canvas-test/tree/master/src/Funny-demo/netparticle) |
@@ -54,6 +56,7 @@ npm run build
 | [绘制多边形](http://whxaxes.github.io/canvas-test/src/Other-demo/duobianxing.html) | [查看代码](https://github.com/whxaxes/canvas-test/tree/master/src/Other-demo) |
 | [仿重力小球](http://whxaxes.github.io/canvas-test/src/Other-demo/shotBall.html) | [查看代码](https://github.com/whxaxes/canvas-test/tree/master/src/Other-demo) |
 | [秒表](http://whxaxes.github.io/canvas-test/src/Other-demo/stopWatch.html) | [查看代码](https://github.com/whxaxes/canvas-test/tree/master/src/Other-demo) |
+
 [/placeholder]:p
 
 ## Author
