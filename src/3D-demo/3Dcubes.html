@@ -1,355 +1,363 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<style>
-        html,body{
-            width: 100%;
-            height: 100%;
-        }
-		body{margin: 0;padding:0;-moz-user-select: none;}
-        .view{
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-		.tips{
-            position: relative;
-            text-align: center;
-            z-index: 999;
-        }
-		#cas{
-            position: absolute;
-            display: block;
-            top: 0;
-            left: 0;
-            right: 0;
-            margin: auto;
-            cursor: move;
-        }
-	</style>
-	<title>3d多立方体</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -moz-user-select: none;
+    }
+
+    .view {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .tips {
+      position: relative;
+      text-align: center;
+      z-index: 999;
+    }
+
+    #cas {
+      position: absolute;
+      display: block;
+      top: 0;
+      left: 0;
+      right: 0;
+      margin: auto;
+      cursor: move;
+    }
+  </style>
+  <title>3d多立方体</title>
 </head>
 <body onselectstart="return false">
 <div class="view">
-    <p class="tips">鼠标拖动立方体转动，滚动鼠标滚轮缩放~</p>
-    <canvas id="cas" width="700" height="600">您的浏览器不支持canvas</canvas>
+  <p class="tips">鼠标拖动立方体转动，滚动鼠标滚轮缩放~</p>
+  <canvas id="cas" width="700" height="600">您的浏览器不支持canvas</canvas>
 </div>
 
 <script src="../public/stats.min.js"></script>
 <script>
-	'use strict';
+  'use strict';
 
-	var stats = new Stats();
-	stats.setMode(0);
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.right = '0px';
-	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );
+  var stats = new Stats();
+  stats.setMode(0);
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.right = '0px';
+  stats.domElement.style.top = '0px';
+  document.body.appendChild(stats.domElement);
 
-	var canvas = document.getElementById("cas");
+  var canvas = document.getElementById("cas");
 
-    canvas.width = document.body.offsetWidth;
-    canvas.height = document.body.offsetHeight;
+  canvas.width = document.body.offsetWidth;
+  canvas.height = document.body.offsetHeight;
 
-	var ctx = canvas.getContext("2d");
-	var fallLength = 1000 ,
-		centerX = canvas.width/2 ,
-		centerY = canvas.height/2 ,
-		cubeWidth = 100;
+  var ctx = canvas.getContext("2d");
+  var fallLength = 1000,
+      centerX = canvas.width / 2,
+      centerY = canvas.height / 2,
+      cubeWidth = 100;
 
-	window.RAF = (function(){
-		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {window.setTimeout(callback, 1000 / 60); };
-	})();
+  window.RAF = (function() {
+    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {window.setTimeout(callback, 1000 / 60); };
+  })();
 
-	var Cube = function(opt){
-		//存放所有点坐标
-		this.dots = [];
+  var Cube = function(opt) {
+    //存放所有点坐标
+    this.dots = [];
 
-		//存放面
-		this.faces = [];
+    //存放面
+    this.faces = [];
 
-		this.init(opt);
-	};
+    this.init(opt);
+  };
 
-	Cube.prototype = {
-		init:function(opt){
-			this.xpos = opt.x;
-			this.ypos = opt.y;
-			this.zpos = opt.z;
-            this.w = opt.w;
+  Cube.prototype = {
+    init: function(opt) {
+      this.xpos = opt.x;
+      this.ypos = opt.y;
+      this.zpos = opt.z;
+      this.w = opt.w;
 
-			for(var i=0;i<8;i++){
-				this.dots.push({x:0,y:0,z:0})
-			}
+      for (var i = 0; i < 8; i++) {
+        this.dots.push({ x: 0, y: 0, z: 0 })
+      }
 
-			this.setVector();
+      this.setVector();
 
-			this.faces.push([this.dots[0] , this.dots[1] , this.dots[3] , this.dots[2]]);
-			this.faces.push([this.dots[2] , this.dots[3] , this.dots[5] , this.dots[4]]);
-			this.faces.push([this.dots[4] , this.dots[5] , this.dots[7] , this.dots[6]]);
-			this.faces.push([this.dots[6] , this.dots[7] , this.dots[1] , this.dots[0]]);
-			this.faces.push([this.dots[1] , this.dots[3] , this.dots[5] , this.dots[7]]);
-			this.faces.push([this.dots[0] , this.dots[2] , this.dots[4] , this.dots[6]]);
-		},
+      this.faces.push([this.dots[0], this.dots[1], this.dots[3], this.dots[2]]);
+      this.faces.push([this.dots[2], this.dots[3], this.dots[5], this.dots[4]]);
+      this.faces.push([this.dots[4], this.dots[5], this.dots[7], this.dots[6]]);
+      this.faces.push([this.dots[6], this.dots[7], this.dots[1], this.dots[0]]);
+      this.faces.push([this.dots[1], this.dots[3], this.dots[5], this.dots[7]]);
+      this.faces.push([this.dots[0], this.dots[2], this.dots[4], this.dots[6]]);
+    },
 
-		setVector:function(){
-			var x = this.xpos,
-				y = this.ypos,
-				z = this.zpos,
-                dis = this.w / 2;
+    setVector: function() {
+      var x = this.xpos,
+          y = this.ypos,
+          z = this.zpos,
+          dis = this.w / 2;
 
-			this.dots[0].x = x - dis;
-			this.dots[0].y = y - dis;
-			this.dots[0].z = z + dis;
+      this.dots[0].x = x - dis;
+      this.dots[0].y = y - dis;
+      this.dots[0].z = z + dis;
 
-			this.dots[1].x = x - dis;
-			this.dots[1].y = y + dis;
-			this.dots[1].z = z + dis;
+      this.dots[1].x = x - dis;
+      this.dots[1].y = y + dis;
+      this.dots[1].z = z + dis;
 
-			this.dots[2].x = x + dis;
-			this.dots[2].y = y - dis;
-			this.dots[2].z = z + dis;
+      this.dots[2].x = x + dis;
+      this.dots[2].y = y - dis;
+      this.dots[2].z = z + dis;
 
-			this.dots[3].x = x + dis;
-			this.dots[3].y = y + dis;
-			this.dots[3].z = z + dis;
+      this.dots[3].x = x + dis;
+      this.dots[3].y = y + dis;
+      this.dots[3].z = z + dis;
 
-			this.dots[4].x = x + dis;
-			this.dots[4].y = y - dis;
-			this.dots[4].z = z - dis;
+      this.dots[4].x = x + dis;
+      this.dots[4].y = y - dis;
+      this.dots[4].z = z - dis;
 
-			this.dots[5].x = x + dis;
-			this.dots[5].y = y + dis;
-			this.dots[5].z = z - dis;
+      this.dots[5].x = x + dis;
+      this.dots[5].y = y + dis;
+      this.dots[5].z = z - dis;
 
-			this.dots[6].x = x - dis;
-			this.dots[6].y = y - dis;
-			this.dots[6].z = z - dis;
+      this.dots[6].x = x - dis;
+      this.dots[6].y = y - dis;
+      this.dots[6].z = z - dis;
 
-			this.dots[7].x = x - dis;
-			this.dots[7].y = y + dis;
-			this.dots[7].z = z - dis;
-		},
+      this.dots[7].x = x - dis;
+      this.dots[7].y = y + dis;
+      this.dots[7].z = z - dis;
+    },
 
-        move:function(xc, yc, zc){
-            this.xpos += xc;
-            this.ypos += yc;
-            this.zpos += zc;
+    move: function(xc, yc, zc) {
+      this.xpos += xc;
+      this.ypos += yc;
+      this.zpos += zc;
 
-            this.dots.forEach(function(dot){
-                dot.x += xc;
-                dot.y += yc;
-                dot.z += zc;
-            })
-        },
+      this.dots.forEach(function(dot) {
+        dot.x += xc;
+        dot.y += yc;
+        dot.z += zc;
+      })
+    },
 
-		rotate:function(angleX , angleY){
-			var xcos = Math.cos(angleX);
-			var xsin = Math.sin(angleX);
-			var ycos = Math.cos(angleY);
-			var ysin = Math.sin(angleY);
+    rotate: function(angleX, angleY) {
+      var xcos = Math.cos(angleX);
+      var xsin = Math.sin(angleX);
+      var ycos = Math.cos(angleY);
+      var ysin = Math.sin(angleY);
 
-			var x, y, z;
-			var nx, ny, nz;
-			var xa = 0, ya = 0, za = 0;
+      var x, y, z;
+      var nx, ny, nz;
+      var xa = 0, ya = 0, za = 0;
 
-			//计算旋转后的所有点坐标位置
-			this.dots.forEach(function(dot){
-				x = dot.x;
-				y = dot.y;
-				z = dot.z;
+      //计算旋转后的所有点坐标位置
+      this.dots.forEach(function(dot) {
+        x = dot.x;
+        y = dot.y;
+        z = dot.z;
 
-				//绕X轴旋转
-				ny = y * xcos - z * xsin;
-				nz = z * xcos + y * xsin;
+        //绕X轴旋转
+        ny = y * xcos - z * xsin;
+        nz = z * xcos + y * xsin;
 
-				//绕Y轴旋转
-				nx = x * ycos - nz * ysin;
-				nz = nz * ycos + x * ysin;
+        //绕Y轴旋转
+        nx = x * ycos - nz * ysin;
+        nz = nz * ycos + x * ysin;
 
-				dot.x = nx;
-				dot.y = ny;
-				dot.z = nz;
+        dot.x = nx;
+        dot.y = ny;
+        dot.z = nz;
 
-				xa += nx;
-				ya += ny;
-				za += nz;
-			});
+        xa += nx;
+        ya += ny;
+        za += nz;
+      });
 
-			//更新中心点坐标
-			this.xpos = xa/this.dots.length;
-			this.ypos = ya/this.dots.length;
-			this.zpos = za/this.dots.length;
-		}
-	};
+      //更新中心点坐标
+      this.xpos = xa / this.dots.length;
+      this.ypos = ya / this.dots.length;
+      this.zpos = za / this.dots.length;
+    }
+  };
 
-	function drawFace(face){
-		if(!face.color){
-			face.color = "rgba(" + parseInt(getRandom(128, 255)) + "," + parseInt(getRandom(128, 255)) + "," + parseInt(getRandom(128, 255)) + ",1)";
-		}
+  function drawFace(face) {
+    if (!face.color) {
+      face.color = "rgba(" + parseInt(getRandom(128, 255)) + "," + parseInt(getRandom(128, 255)) + "," + parseInt(getRandom(128, 255)) + ",1)";
+    }
 
-		ctx.save();
-		ctx.beginPath();
-		ctx.moveTo(get2d(face[0]).x, get2d(face[0]).y);
-		ctx.lineTo(get2d(face[1]).x, get2d(face[1]).y);
-		ctx.lineTo(get2d(face[2]).x, get2d(face[2]).y);
-		ctx.lineTo(get2d(face[3]).x, get2d(face[3]).y);
-		ctx.closePath();
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(get2d(face[0]).x, get2d(face[0]).y);
+    ctx.lineTo(get2d(face[1]).x, get2d(face[1]).y);
+    ctx.lineTo(get2d(face[2]).x, get2d(face[2]).y);
+    ctx.lineTo(get2d(face[3]).x, get2d(face[3]).y);
+    ctx.closePath();
 //
 //        ctx.strokeStyle = "#fff";
 //        ctx.stroke();
 
-		ctx.fillStyle = face.color;
-		ctx.fill();
-	}
+    ctx.fillStyle = face.color;
+    ctx.fill();
+  }
 
-	function get2d(dot){
-		var scale = fallLength / (fallLength + dot.z);
-		var x = centerX + dot.x * scale;
-		var y = centerY + dot.y * scale;
-		return {x: x, y: y};
-	}
+  function get2d(dot) {
+    var scale = fallLength / (fallLength + dot.z);
+    var x = centerX + dot.x * scale;
+    var y = centerY + dot.y * scale;
+    return { x: x, y: y };
+  }
 
-    window.onmousewheel = function(e){
-        cubeList.forEach(function(cube){
-            var nx = cube.xpos/10;
-            var ny = cube.ypos/10;
-            var nz = cube.zpos/10;
+  window.onmousewheel = function(e) {
+    cubeList.forEach(function(cube) {
+      var nx = cube.xpos / 10;
+      var ny = cube.ypos / 10;
+      var nz = cube.zpos / 10;
 
-            nx = e.wheelDelta > 0 ? nx : -nx;
-            ny = e.wheelDelta > 0 ? ny : -ny;
-            nz = e.wheelDelta > 0 ? nz : -nz;
+      nx = e.wheelDelta > 0 ? nx : -nx;
+      ny = e.wheelDelta > 0 ? ny : -ny;
+      nz = e.wheelDelta > 0 ? nz : -nz;
 
-            cube.move(nx, ny, nz);
-        })
+      cube.move(nx, ny, nz);
+    })
+  };
+
+  //鼠标事件绑定
+  canvas.onmousedown = function(e) {
+    var angleY, angleX;
+
+    e = e || window.event;
+    var x1 = e.clientX - canvas.offsetLeft - centerX;
+    var y1 = e.clientY - canvas.offsetTop - centerY;
+
+    var xc = 0, yc = 0;
+    var date = new Date();
+    var dc = 10000;
+
+    cubeList.forEach(function(cube) {
+      cube.inertia = false;
+    });
+
+    window.onmousemove = function(e) {
+      e = e || window.event;
+      var x2 = e.clientX - canvas.offsetLeft - centerX;
+      var y2 = e.clientY - canvas.offsetTop - centerY;
+      var date2 = new Date();
+
+      xc = x2 - x1;
+      yc = y2 - y1;
+
+      angleY = xc * 0.005;
+      angleX = yc * 0.005;
+
+      cubeList.forEach(function(cube) {
+        cube.rotate(angleX, angleY);
+      });
+
+      x1 = x2;
+      y1 = y2;
+      date = date2;
     };
 
-	//鼠标事件绑定
-	canvas.onmousedown = function(e){
-		var angleY,angleX;
+    window.mouseleave = window.onmouseup = function(e) {
+      window.onmousemove = null;
+      var date2 = new Date();
+      var dc = (date2 - date) || 1;
 
-		e = e || window.event;
-		var x1 = e.clientX - canvas.offsetLeft - centerX;
-		var y1 = e.clientY - canvas.offsetTop - centerY;
+      cubeList.forEach(function(cube) {
+        cube.inertia = true;
+        cube.toAngle = {
+          x: yc / dc,
+          y: xc / dc
+        };
+      });
+    }
+  };
 
-		var xc = 0, yc = 0;
-        var date = new Date();
-        var dc = 10000;
+  /**
+   * 动画初始化
+   */
+  var cubeList = [],
+      cubeFace = [],
+      distance = 200,
+      level = 3,
+      cube_w = 100;
+  function initAnimate() {
+    var cw = cube_w / level;
+    var dis = cw + distance;
+    var minmax = (level - 1) * dis;
 
-		cubeList.forEach(function(cube){
-			cube.inertia = false;
-		});
+    var cube;
 
-		window.onmousemove = function(e){
-			e = e || window.event;
-			var x2 = e.clientX - canvas.offsetLeft - centerX;
-			var y2 = e.clientY - canvas.offsetTop - centerY;
-            var date2 = new Date();
+    //三层正方体
+    for (var l1 = -minmax; l1 <= minmax; l1 += dis) {
+      for (var l2 = -minmax; l2 <= minmax; l2 += dis) {
+        for (var l3 = -minmax; l3 <= minmax; l3 += dis) {
+          cube = new Cube({ x: l1, y: l2, z: l3, w: cw });
+          cubeFace = cubeFace.concat(cube.faces);
+          cubeList.push(cube);
 
-			xc = x2 - x1;
-			yc = y2 - y1;
+          cube.inertia = true;
+          cube.toAngle = {
+            x: 2,
+            y: 10
+          }
+        }
+      }
+    }
 
-			angleY = xc * 0.005;
-			angleX = yc * 0.005;
+    animate();
+  }
 
-			cubeList.forEach(function(cube){
-				cube.rotate(angleX, angleY);
-			});
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-			x1 = x2;
-			y1 = y2;
-            date = date2;
-		};
+    cubeFace.sort(function(a, b) {
+      var indexa = (a[0].z + a[1].z + a[2].z + a[3].z) / 4;
+      var indexb = (b[0].z + b[1].z + b[2].z + b[3].z) / 4;
 
-		window.mouseleave = window.onmouseup = function(e){
-			window.onmousemove = null;
-            var date2 = new Date();
-            var dc = (date2-date)||1;
+      return indexb - indexa;
+    });
 
-			cubeList.forEach(function(cube){
-				cube.inertia = true;
-				cube.toAngle = {
-					x : yc/dc,
-					y : xc/dc
-				};
-			});
-		}
-	};
+    //遍历cube判断是否需要旋转
+    cubeList.forEach(function(cube) {
+      if (cube.inertia) {
+        var ax = cube.toAngle.x * 0.02;
+        var ay = cube.toAngle.y * 0.02;
 
-	/**
-	 * 动画初始化
-	 */
-	var cubeList = [],
-		cubeFace = [],
-		distance = 200,
-        level = 3,
-        cube_w = 100;
-	function initAnimate(){
-        var cw = cube_w/level;
-		var dis = cw + distance;
-        var minmax = (level - 1) * dis;
+        cube.toAngle.x -= ax;
+        cube.toAngle.y -= ay;
 
-        var cube;
+        cube.rotate(ax, ay);
+      }
+    });
 
-		//三层正方体
-		for (var l1 = -minmax; l1 <= minmax; l1 += dis) {
-			for (var l2 = -minmax; l2 <= minmax; l2 += dis) {
-				for (var l3 = -minmax; l3 <= minmax; l3 += dis) {
-					cube = new Cube({x: l1, y: l2, z: l3, w: cw});
-					cubeFace = cubeFace.concat(cube.faces);
-					cubeList.push(cube);
+    cubeFace.forEach(function(face) {
+      drawFace(face);
+    });
 
-					cube.inertia = true;
-					cube.toAngle = {
-						x : 2,
-						y :	10
-					}
-				}
-			}
-		}
+    stats.update();
 
-		animate();
-	}
+    RAF(animate);
+  }
 
-	function animate(){
-		ctx.clearRect(0,0,canvas.width,canvas.height);
+  function getRandom(a, b) {
+    return Math.random() * (b - a) + a;
+  }
 
-		cubeFace.sort(function(a, b){
-			var indexa = (a[0].z + a[1].z + a[2].z + a[3].z)/4;
-			var indexb = (b[0].z + b[1].z + b[2].z + b[3].z)/4;
-
-			return indexb - indexa;
-		});
-
-		//遍历cube判断是否需要旋转
-		cubeList.forEach(function(cube){
-			if(cube.inertia){
-				var ax = cube.toAngle.x * 0.02;
-				var ay = cube.toAngle.y * 0.02;
-
-				cube.toAngle.x -= ax;
-				cube.toAngle.y -= ay;
-
-				cube.rotate(ax, ay);
-			}
-		});
-
-		cubeFace.forEach(function(face){
-			drawFace(face);
-		});
-
-		stats.update();
-
-		RAF(animate);
-	}
-
-	function getRandom(a, b) {
-		return Math.random() * (b - a) + a;
-	}
-
-	initAnimate();
+  initAnimate();
 </script>
 </body>
 </html>

@@ -1,143 +1,186 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
-    <title>LOW POLY（图片三角化）</title>
-    <style>
-        #upload{display: block;margin: 10px 0;height: 60px;text-align: center;line-height: 60px;border: 1px solid;border-radius: 5px;cursor: pointer;}
-        .touch{background-color: #ddd;}
-        #files{display: none}
-        #box{position: relative;}
-        canvas{max-width: 100%;margin:10px auto;display: block;}
-        .loading{position: absolute;display: none;width: 100%;height: 40px;line-height: 50px;text-align: center;top: 0;bottom: 0;margin: auto;font-size: 50px;color: #FFF;}
-        .showloading .loading{display: block;}
-    </style>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <title>LOW POLY（图片三角化）</title>
+  <style>
+    #upload {
+      display: block;
+      margin: 10px 0;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      border: 1px solid;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .touch {
+      background-color: #ddd;
+    }
+
+    #files {
+      display: none
+    }
+
+    #box {
+      position: relative;
+    }
+
+    canvas {
+      max-width: 100%;
+      margin: 10px auto;
+      display: block;
+    }
+
+    .loading {
+      position: absolute;
+      display: none;
+      width: 100%;
+      height: 40px;
+      line-height: 50px;
+      text-align: center;
+      top: 0;
+      bottom: 0;
+      margin: auto;
+      font-size: 50px;
+      color: #FFF;
+    }
+
+    .showloading .loading {
+      display: block;
+    }
+  </style>
 </head>
 <body>
 <div>
-    <a id="upload">上传图片</a>
-    <input type="file" id="files" accept="image/*"/>
+  <a id="upload">上传图片</a>
+  <input type="file" id="files" accept="image/*"/>
 </div>
 
 <div id="box">
-    <canvas id="cas"></canvas>
-    <div class="loading">解析ing...</div>
+  <canvas id="cas"></canvas>
+  <div class="loading">解析ing...</div>
 </div>
 
 <script src="sobel.js"></script>
 <script src="delaunay.js"></script>
 <script>
-    "use strict";
-    var inputFile = document.getElementById("files");
-    var canvas = document.getElementById("cas");
-    var ctx = canvas.getContext("2d");
+  "use strict";
+  var inputFile = document.getElementById("files");
+  var canvas = document.getElementById("cas");
+  var ctx = canvas.getContext("2d");
 
-    var box = document.getElementById("box");
-    var uplbtn = document.getElementById("upload");
-    uplbtn.onclick = function(){inputFile.click();};
-    uplbtn.ontouchstart = function(){this.className="touch"};
-    uplbtn.ontouchend = function(){this.className=""};
+  var box = document.getElementById("box");
+  var uplbtn = document.getElementById("upload");
+  uplbtn.onclick = function() {inputFile.click();};
+  uplbtn.ontouchstart = function() {this.className = "touch"};
+  uplbtn.ontouchend = function() {this.className = ""};
 
-    var jxdvalue = 50;      //精细度，值越小，图片越精细
+  var jxdvalue = 50;      //精细度，值越小，图片越精细
 
-    var img = new Image();
-    img.src = "./test2.jpg";
-    img.onload = function () {
+  var img = new Image();
+  img.src = "./test2.jpg";
+  img.onload = function() {
+    parse(this);
+  };
+
+  inputFile.onchange = function() {
+    if (!this.files.length) return;
+
+    var file = this.files[0];
+
+    if (!/\/(?:jpeg|png)/i.test(file.type)) {
+      alert("图片需为JPG或者PNG格式");
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function() {
+      img = new Image();
+      img.src = this.result;
+
+      img.onload = function() {
         parse(this);
+      }
     };
+    reader.readAsDataURL(file);
+  };
 
-    inputFile.onchange = function(){
-        if(!this.files.length) return;
+  function parse(img) {
+    var particles = [];
+    canvas.width = (img.width > 800) ? 800 : img.width;
+    canvas.height = img.height * canvas.width / img.width;
 
-        var file = this.files[0];
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        if (!/\/(?:jpeg|png)/i.test(file.type)) {
-            alert("图片需为JPG或者PNG格式");
-            return;
-        }
+    box.className = "showloading";
 
-        var reader = new FileReader();
-        reader.onload = function(){
-            img = new Image();
-            img.src = this.result;
-
-            img.onload = function(){
-                parse(this);
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    function parse(img){
-        var particles = [];
-        canvas.width = (img.width > 800) ? 800 : img.width;
-        canvas.height = img.height * canvas.width/img.width;
-
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        box.className = "showloading";
-
-        setTimeout(function(){
-            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setTimeout(function() {
+      var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
 //          收集色值大于40的边缘像素点
-            var collectors = [];
-            Sobel(imgData , function(value , x , y){
-                if(value > 40){collectors.push([x , y]);}
-            });
+      var collectors = [];
+      Sobel(imgData, function(value, x, y) {
+        if (value > 40) {
+          collectors.push([x, y]);
+        }
+      });
 
 //          添加一些随机点
-            for(var i=0;i<300;i++){particles.push([Math.random()*canvas.width , Math.random()*canvas.height]);}
+      for (var i = 0; i < 300; i++) {
+        particles.push([Math.random() * canvas.width, Math.random() * canvas.height]);
+      }
 
 //          添加随机边缘点，数量为边缘点数量除于50
-            var length = ~~(collectors.length/jxdvalue), random;
-            for(var l=0;l<length;l++){
-                random = (Math.random()*collectors.length)<<0;
-                particles.push(collectors[random]);
-                collectors.splice(random , 1);
-            }
+      var length = ~~(collectors.length / jxdvalue), random;
+      for (var l = 0; l < length; l++) {
+        random = (Math.random() * collectors.length) << 0;
+        particles.push(collectors[random]);
+        collectors.splice(random, 1);
+      }
 
 //          添加四顶点坐标
-            particles.push([0,0] , [0,canvas.height] , [canvas.width,0] , [canvas.width,canvas.height]);
+      particles.push([0, 0], [0, canvas.height], [canvas.width, 0], [canvas.width, canvas.height]);
 
 //          使用delaunay三角化获取三角坐标
-            var triangles = Delaunay.triangulate(particles);
+      var triangles = Delaunay.triangulate(particles);
 
-            var x1,x2,x3,y1,y2,y3,cx,cy;
-            for(var i=0;i < triangles.length; i+=3) {
-                x1 = particles[triangles[i]][0];
-                x2 = particles[triangles[i+1]][0];
-                x3 = particles[triangles[i+2]][0];
-                y1 = particles[triangles[i]][1];
-                y2 = particles[triangles[i+1]][1];
-                y3 = particles[triangles[i+2]][1];
+      var x1, x2, x3, y1, y2, y3, cx, cy;
+      for (var i = 0; i < triangles.length; i += 3) {
+        x1 = particles[triangles[i]][0];
+        x2 = particles[triangles[i + 1]][0];
+        x3 = particles[triangles[i + 2]][0];
+        y1 = particles[triangles[i]][1];
+        y2 = particles[triangles[i + 1]][1];
+        y3 = particles[triangles[i + 2]][1];
 
 //              获取三角形中心点坐标
-                cx = ~~((x1 + x2 + x3) / 3);
-                cy = ~~((y1 + y2 + y3) / 3);
+        cx = ~~((x1 + x2 + x3) / 3);
+        cy = ~~((y1 + y2 + y3) / 3);
 
 //              获取中心点坐标的颜色值
-                var index = (cy*imgData.width + cx)*4;
-                var color_r = imgData.data[index];
-                var color_g = imgData.data[index+1];
-                var color_b = imgData.data[index+2];
+        var index = (cy * imgData.width + cx) * 4;
+        var color_r = imgData.data[index];
+        var color_g = imgData.data[index + 1];
+        var color_b = imgData.data[index + 2];
 
 //              绘制三角形
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.lineTo(x3, y3);
-                ctx.closePath();
-                ctx.fillStyle = "rgba("+color_r+","+color_g+","+color_b+",1)";
-                ctx.fill();
-                ctx.restore();
-            }
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineTo(x3, y3);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(" + color_r + "," + color_g + "," + color_b + ",1)";
+        ctx.fill();
+        ctx.restore();
+      }
 
-            box.className = "";
-        } , 50);
-    }
+      box.className = "";
+    }, 50);
+  }
 </script>
 </body>
 </html>
