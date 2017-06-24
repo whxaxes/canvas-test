@@ -25,10 +25,10 @@
     ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    ballRadius = 10, g = 9.8 , mocali = 0.5, balls = [], collarg = 0.8;
+    ballRadius = 40, g = 9.8 , mocali = 0.5, balls = [], collarg = 0.8;
     pxpm = canvas.width / 20;   //px/m
 
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 2; i++) {
       var ball = new Ball(getRandom(ballRadius, canvas.width - ballRadius), getRandom(ballRadius, canvas.height - ballRadius), ballRadius, "rgba(" + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + "," + parseInt(Math.random() * 255) + " , 1)");
       balls.push(ball);
     }
@@ -87,11 +87,11 @@
         var b1 = balls[i], b2 = balls[j];
         if (b1 !== b2) {
           var rc = Math.sqrt(Math.pow(b1.x - b2.x, 2) + Math.pow(b1.y - b2.y, 2));
-          if (Math.ceil(rc) < (b1.radius + b2.radius)) {
-
+          var touched = Math.ceil(rc) <= (b1.radius + b2.radius);
+          if (touched) {
             //获得碰撞后速度的增量
-            var ax = ((b1.vx - b2.vx) * Math.pow((b1.x - b2.x), 2) + (b1.vy - b2.vy) * (b1.x - b2.x) * (b1.y - b2.y)) / Math.pow(rc, 2)
-            var ay = ((b1.vy - b2.vy) * Math.pow((b1.y - b2.y), 2) + (b1.vx - b2.vx) * (b1.x - b2.x) + (b1.y - b2.y)) / Math.pow(rc, 2)
+            var ax = ((b1.vx - b2.vx) * Math.pow((b1.x - b2.x), 2) + (b1.vy - b2.vy) * (b1.x - b2.x) * (b1.y - b2.y)) / Math.pow(rc, 2);
+            var ay = ((b1.vy - b2.vy) * Math.pow((b1.y - b2.y), 2) + (b1.vx - b2.vx) * (b1.x - b2.x) + (b1.y - b2.y)) / Math.pow(rc, 2);
 
             //给与小球新的速度
             b1.vx = (b1.vx - ax) * collarg;
@@ -117,7 +117,7 @@
     for (var i = 0; i < this.length; i++) {
       callback.call(this[i]);
     }
-  }
+  };
 
   var Ball = function(x, y, r, color) {
     this.x = x;
@@ -126,10 +126,11 @@
     this.oldy = y;
     this.vx = 0;
     this.vy = 0;
+    this.balls = [];
     this.radius = r;
     this.color = color;
     this.candrod = true;
-  }
+  };
 
   Ball.prototype = {
     paint: function() {
@@ -152,10 +153,8 @@
         this.paint();
         return
       }
-      ;
       this.oldx = this.x;
       this.oldy = this.y;
-
 
       this.vx += this.vx > 0 ? -mocali * t : mocali * t;
       this.vy = this.vy + g * t;

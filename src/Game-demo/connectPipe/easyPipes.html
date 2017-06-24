@@ -283,7 +283,7 @@
         drawBackGround: function() {
           ctx.save();
           ctx.fillStyle = "#BB8350";
-          ctx.fillRect(0, boxes[0].center.y - boxWidth / 2 - jiange, boxWidth * cols + 2 * jiange, boxWidth * rows + 2 * jiange);
+          ctx.strokeRect(0, boxes[0].center.y - boxWidth / 2 - jiange, boxWidth * cols + 2 * jiange, boxWidth * rows + 2 * jiange);
 
           for (var i = 0; i < rows; i++) {
             for (var j = 0; j < cols; j++) {
@@ -291,7 +291,7 @@
             }
           }
 
-          ctx.restore;
+          ctx.restore();
         },
         drawWaterBox: function() {
           var wb1 = new WaterBox({ x: canvas.width / 2, y: jiange + 50 }, false, canvas.width - (2 * jiange), 100)
@@ -368,8 +368,7 @@
                 x: (j * boxWidth) + boxWidth / 2 + jiange,
                 y: (i * boxWidth) + boxWidth / 2 + marginTop
               }, 1, true, 0.5 * Math.PI, { rows: i, cols: j });
-            }
-            else {
+            } else {
               b = new Box({
                 x: (j * boxWidth) + boxWidth / 2 + jiange,
                 y: (i * boxWidth) + boxWidth / 2 + marginTop
