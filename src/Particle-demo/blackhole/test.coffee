@@ -195,7 +195,7 @@ canvas.onmouseup = canvas.onmouseout = (e)->
 
 #执行动画
 execAnimate = ->
-  for i in [1...1000]
+  for i in [1...400]
     particles.push(new Particle(x: canvas.width * Math.random(), y: canvas.height * Math.random(), r: Math.random()*2+1 , color:"rgba(255,255,255,.5)"))
   animate();
 
