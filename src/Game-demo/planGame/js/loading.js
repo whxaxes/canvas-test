@@ -1,7 +1,7 @@
 var Loading = function(){
 	var loadingComplete = false;
 	var dateCount = null;
-	var init = function(datas , canvas , callback){
+	function init(datas , canvas , callback){
 		this.canvas = canvas;
 		this.x = this.canvas.width/2;
 		this.y = this.canvas.height/2;

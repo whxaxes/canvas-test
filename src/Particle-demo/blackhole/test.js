@@ -249,7 +249,7 @@
 
   execAnimate = function() {
     var i, k;
-    for (i = k = 1; k < 1000; i = ++k) {
+    for (i = k = 1; k < 400; i = ++k) {
       particles.push(new Particle({
         x: canvas.width * Math.random(),
         y: canvas.height * Math.random(),
