@@ -34,12 +34,12 @@
 
   var musics = [
     {
-      name: "恋音と雨空",
-      src: "music.mp3"
-    },
-    {
       name: "Fate Stay Night",
       src: "music2.mp3"
+    },
+    {
+      name: "Two Steps From Hell",
+      src: "music.mp3"
     }
   ];
   var nowIndex = 0;   //当前播放到的音乐索引
