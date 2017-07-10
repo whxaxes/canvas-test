@@ -1,6 +1,10 @@
 (function() {
-  var canvas = document.getElementById("cas"),
-    ctx = canvas.getContext("2d");
+  var canvas = document.getElementById("cas");
+  var ctx = canvas.getContext("2d");
+  var outcanvas = document.createElement("canvas");
+  outcanvas.width = canvas.width;
+  outcanvas.height = canvas.height / 2;
+  var octx = outcanvas.getContext('2d');
 
   // audioSource 为音频源，bufferSource为buffer源
   var audioSource, bufferSource;
@@ -32,16 +36,13 @@
   //播放音乐
   var audio = $(".music-player")[0];
 
-  var musics = [
-    {
-      name: "Fate Stay Night",
-      src: "music2.mp3"
-    },
-    {
-      name: "Two Steps From Hell",
-      src: "music.mp3"
-    }
-  ];
+  var musics = [{
+    name: "Fate Stay Night",
+    src: "music2.mp3"
+  }, {
+    name: "Two Steps From Hell",
+    src: "music.mp3"
+  }];
   var nowIndex = 0;   //当前播放到的音乐索引
   var singleLoop = false; //是否单曲循环
 
@@ -223,8 +224,7 @@
 
   //绘制音谱的参数
   var rt_array = [],	//用于存储柱形条对象
-    rt_length = 30,		//规定有多少个柱形条
-    outcanvas = null;
+    rt_length = 30;		//规定有多少个柱形条
 
   var grd = ctx.createLinearGradient(0, 110, 0, 270);
   grd.addColorStop(0, "red");
@@ -244,10 +244,6 @@
 
   //动画初始化，获取analyserNode里的音频buffer
   function initAnimation() {
-    outcanvas = document.createElement("canvas");
-    outcanvas.width = canvas.width;
-    outcanvas.height = canvas.height / 2;
-
     //每个柱形条的宽度，及柱形条宽度+间隔
     var aw = canvas.width / rt_length;
     var w = aw - 5;
@@ -262,6 +258,7 @@
   function animate() {
     if (!musics[nowIndex].decoding) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      octx.clearRect(0, 0, canvas.width, canvas.height);
 
       //出来的数组为8bit整型数组，即值为0~256，整个数组长度为1024，即会有1024个频率，只需要取部分进行显示
       var array_length = analyser.frequencyBinCount;
@@ -278,7 +275,7 @@
         rt.update(array[rt.index]);
       }
 
-      copy();
+      draw();
     } else {
       showTxt("音频解码中...")
     }
@@ -287,33 +284,29 @@
   }
 
   //制造半透明投影
-  function copy() {
-    var outctx = outcanvas.getContext("2d");
-    var imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height / 2);
-    for (var i = 0; i < imgdata.data.length; i += 4) {
-      imgdata.data[i + 3] = 30;
-    }
-    outctx.putImageData(imgdata, 0, 0);
+  function draw() {
+    ctx.drawImage(outcanvas, 0, 0);
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate(Math.PI);
     ctx.scale(-1, 1);
-    ctx.drawImage(outcanvas, -canvas.width / 2, -canvas.height / 2)
+    ctx.drawImage(outcanvas, -canvas.width / 2, -canvas.height / 2);
     ctx.restore();
+    ctx.fillStyle = 'rgba(0, 0, 0, .8)';
+    ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
   }
 
-  //音谱条对象
+  // 音谱条对象
   function Retangle(w, h, x, y) {
     this.w = w;
-    this.h = h; //小红块高度
+    this.h = h; // 小红块高度
     this.x = x;
     this.y = y;
     this.jg = 3;
     this.power = 0;
-    this.dy = y; //小红块位置
-    this.initY = y;
+    this.dy = y; // 小红块位置
     this.num = 0;
-  };
+  }
 
   var Rp = Retangle.prototype;
 
@@ -335,15 +328,15 @@
   };
 
   Rp.draw = function() {
-    ctx.fillStyle = grd;
+    octx.fillStyle = grd;
     var h = (~~(this.power / (this.h + this.jg))) * (this.h + this.jg);
-    ctx.fillRect(this.x, this.y - h, this.w, h)
+    octx.fillRect(this.x, this.y - h, this.w, h);
     for (var i = 0; i < this.num; i++) {
       var y = this.y - i * (this.h + this.jg);
-      ctx.clearRect(this.x - 1, y, this.w + 2, this.jg);
+      octx.clearRect(this.x - 1, y, this.w + 2, this.jg);
     }
-    ctx.fillStyle = "#950000";
-    ctx.fillRect(this.x, ~~this.dy, this.w, this.h);
+    octx.fillStyle = "#950000";
+    octx.fillRect(this.x, ~~this.dy, this.w, this.h);
   };
 
   app.init();
