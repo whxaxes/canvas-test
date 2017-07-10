@@ -38,6 +38,7 @@ body {
 .view {
   height: 100%;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .left-side {
