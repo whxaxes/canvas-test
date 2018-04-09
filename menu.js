@@ -17,7 +17,7 @@ let html = fs.readFileSync('./menu.html').toString();
 let readme = fs.readFileSync('./README.md').toString();
 
 let ul_html = '<div class="view">';
-let md_value = '| 标题 |  |\n| :-------- | :--------:|\n';
+let md_value = '| 标题 |  |\n|:-------- |:--------:|\n';
 
 const mlList = [
   'Funny-demo',
@@ -76,7 +76,7 @@ ul_html += '</div>';
 html = html.replace(/(<body>)[\s\S]*?(<\/body>)/, '$1' + ul_html + '$2');
 readme = readme.replace(
   /(\[placeholder]:p)[\s\S]*?(\[\/placeholder]:p)/,
-  '$1\n' + md_value + '\n$2'
+  '$1\n\n' + md_value + '\n\n$2'
 );
 
 fs.writeFileSync('./menu.html', html);
