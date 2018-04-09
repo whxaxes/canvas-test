@@ -1,9 +1,11 @@
 //canvas-test server
 
-var router = require('easy-router');
+var Router = require('easy-router');
 
 var port = 3030;
 
-router.init({debug : true}).setMap('**/*' , '**/*').listen(port);
+Router()
+  .setMap('**/*', '**/*')
+  .listen(port);
 
-console.log("http://127.0.0.1:"+port+"/menu.html");
+console.log('http://127.0.0.1:' + port + '/menu.html');
