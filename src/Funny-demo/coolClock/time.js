@@ -16,7 +16,7 @@ window.timeObj = {
   day: 3,
   hour: 3,
   minute: 50,
-  second: 40
+  second: 40,
 };
 
 var textWid = 24 * ratio;
@@ -33,6 +33,9 @@ backCtx.textAlign = 'center';
 backCtx.textBaseline = 'middle';
 backCtx.font = fontSize + 'px sans-serif, "黑体"';
 
+var ready = false;
+var cache = {};
+
 var ch = ['年', '月', '日', '时', '分', '秒'];
 var keys = Object.keys(window.timeObj);
 var timeMap = {
@@ -47,10 +50,6 @@ var timeMap = {
   8: '1111111',
   9: '1111011',
 };
-
-// update time
-updateTime();
-setInterval(updateTime, 1000);
 
 function formatTime(n) {
   n = String(n);
@@ -85,14 +84,15 @@ function updateTime() {
 function Line(pos1, pos2) {
   this.pos1 = pos1;
   this.pos2 = pos2;
-  this.times = 30;
+  this.times = 20;
+  this.value = '0';
   this.ppos = {
     x: (pos2.x - pos1.x) / this.times,
     y: (pos2.y - pos1.y) / this.times,
   };
 
   this.start = pos1;
-  this.end = pos2;
+  this.end = pos1;
   this.direction = false;
 
   this.movingPos = null;
@@ -124,7 +124,7 @@ lp.updateToGoal = function() {
       this.movingPos.y = this.goalPos.y;
     }
   }
-}
+};
 
 lp.equal = function(pos1, pos2) {
   return pos1.x === pos2.x && pos1.y === pos2.y;
@@ -150,12 +150,9 @@ lp.move = function(type) {
   }
 };
 
-var cache = {};
-function drawText(timeObj) {
-  frontCtx.clearRect(0, 0, back.width, back.height);
+function readyForDraw(timeObj) {
   backCtx.clearRect(0, 0, back.width, back.height);
   backCtx.lineWidth = frontCtx.lineWidth = lineWidth;
-  frontCtx.strokeStyle = '#333';
 
   var i = 0;
   ch.forEach(function(text, index) {
@@ -163,9 +160,9 @@ function drawText(timeObj) {
     backCtx.fillStyle = '#333';
     backCtx.fillText(text, textWid * (3 * i + 2) + halfTextWid, y);
 
-    var str = formatTime(num);
-    for (var j = 0; j < str.length; j++) {
-      var val = str[j];
+    var numStr = formatTime(num);
+    for (var j = 0; j < numStr.length; j++) {
+      var val = numStr[j];
       var map = timeMap[+val];
       var startX = textWid * (3 * i + j);
       var a = halfTextWid - halfNumWidth;
@@ -173,37 +170,103 @@ function drawText(timeObj) {
       var c = y - halfNumHeight;
       var d = y + halfNumHeight;
       var coors = [
-        // [startX + a, y],
-        [startX + a, c],
-        [startX + b, c],
-        [startX + b, y],
-        [startX + a, y],
-        [startX + a, d],
-        [startX + b, d],
-        [startX + b, y],
+        { x: startX + a, y: y },
+        { x: startX + a, y: c },
+        { x: startX + b, y: c },
+        { x: startX + b, y: y },
+        { x: startX + a, y: y },
+        { x: startX + a, y: d },
+        { x: startX + b, y: d },
+        { x: startX + b, y: y },
       ];
 
-      frontCtx.beginPath();
+      var cc = (cache[text + '_' + j] = []);
+
       backCtx.beginPath();
-      frontCtx.moveTo(startX + a, y);
-      backCtx.moveTo(startX + a, y);
+      backCtx.moveTo(coors[0].x, coors[0].y);
 
-      for (var z = 0; z < map.length; z++) {
-        var coor = coors[z];
-        if (map[z] === '1') {
-          frontCtx.lineTo(coor[0], coor[1]);
-        } else {
-          frontCtx.moveTo(coor[0], coor[1]);
-        }
-
-        backCtx.lineTo(coor[0], coor[1]);
+      for (var k = 1; k < coors.length; k++) {
+        backCtx.lineTo(coors[k].x, coors[k].y);
+        cc.push(new Line(coors[k - 1], coors[k]));
       }
 
       backCtx.strokeStyle = '#ddd';
       backCtx.stroke();
-      frontCtx.stroke();
     }
 
     i++;
   });
 }
+
+function drawText(timeObj) {
+  if (!ready) {
+    readyForDraw(timeObj);
+    ready = true;
+  }
+
+  ch.forEach(function(text, index) {
+    var num = timeObj[keys[index]];
+    var numStr = formatTime(num);
+
+    for (var j = 0; j < numStr.length; j++) {
+      var val = numStr[j];
+      var map = timeMap[+val];
+      var cc = cache[text + '_' + j];
+
+      for (var k = 0; k < map.length; k++) {
+        var val = map[k];
+        var line = cc[k];
+        if (line.value !== val) {
+          line.value = val;
+          if (val === '1') {
+            // if (map[k + 1] && map[k + 1] === '1') {
+            //   line.move(3);
+            // } else {
+            //   line.move(1);
+            // }
+            line.move(1);
+          } else {
+            // if (map[k + 1] && map[k + 1] === '1') {
+            //   line.move(4);
+            // } else {
+            //   line.move(2);
+            // }
+            line.move(2);
+          }
+        }
+      }
+    }
+  });
+}
+
+function animate() {
+  frontCtx.clearRect(0, 0, front.width, front.height);
+
+  frontCtx.beginPath();
+  Object.keys(cache).forEach(key => {
+    cache[key].forEach(function(line) {
+      line.update();
+    });
+  });
+  frontCtx.stroke();
+
+  RAF(animate);
+}
+
+window.RAF = (function() {
+  return (
+    window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function(callback) {
+      window.setTimeout(callback, 1000 / 60);
+    }
+  );
+})();
+
+// update time
+updateTime();
+setInterval(updateTime, 1000);
+animate();
