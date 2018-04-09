@@ -1,3 +1,12 @@
+window.timeObj = {
+  year: 29993,
+  month: 12,
+  day: 30,
+  hour: 23,
+  minute: 59,
+  second: 55,
+};
+
 // time handle
 var time = document.getElementById('time');
 var front = document.createElement('canvas');
@@ -5,23 +14,18 @@ var frontCtx = front.getContext('2d');
 var back = document.createElement('canvas');
 var backCtx = back.getContext('2d');
 var ratio = window.devicePixelRatio || 1;
+var color = '#666;';
 time.appendChild(back);
 time.appendChild(front);
 front.width = back.width = time.offsetWidth * ratio;
 front.height = back.height = time.offsetHeight * ratio;
+frontCtx.strokeStyle = color;
+frontCtx.lineCap = 'round';
+frontCtx.lineJoin = 'round';
 
-window.timeObj = {
-  year: 0,
-  month: 0,
-  day: 3,
-  hour: 3,
-  minute: 50,
-  second: 40,
-};
-
-var textWid = 24 * ratio;
-var fontSize = 15 * ratio;
-var numWidth = 12 * ratio;
+var textWid = 18 * ratio;
+var fontSize = 14 * ratio;
+var numWidth = 10 * ratio;
 var numHeight = 15 * ratio;
 var lineWidth = 2 * ratio;
 var halfTextWid = textWid / 2;
@@ -71,8 +75,8 @@ function updateTime() {
     var index = up.length - 1;
     var upper = up.pop();
     var key = keys[index];
-    if (++window.timeObj[key] >= upper) {
-      window.timeObj[key] = 0;
+    if (++window.timeObj[key] >= upper && upper) {
+      window.timeObj[key] = index >= 3 ? 0 : 1;
     } else {
       break;
     }
@@ -106,8 +110,13 @@ lp.update = function() {
     this.updateToGoal();
   }
 
-  frontCtx.moveTo(this.start.x, this.start.y);
-  frontCtx.lineTo(this.end.x, this.end.y);
+  if (
+    !this.equal(this.start, this.end) ||
+    (this.movingPos && !this.equal(this.movingPos, this.goalPos))
+  ) {
+    frontCtx.moveTo(this.start.x, this.start.y);
+    frontCtx.lineTo(this.end.x, this.end.y);
+  }
 };
 
 lp.updateToGoal = function() {
@@ -131,57 +140,66 @@ lp.equal = function(pos1, pos2) {
 };
 
 lp.move = function(type) {
+  var newPos1 = { x: this.pos1.x, y: this.pos1.y };
+  var newPos2 = { x: this.pos2.x, y: this.pos2.y };
   if (type === 1) {
-    this.movingPos = this.end = { x: this.pos1.x, y: this.pos1.y };
-    this.goalPos = { x: this.pos2.x, y: this.pos2.y };
+    this.start = this.pos1;
+    this.movingPos = this.end = newPos1;
+    this.goalPos = newPos2;
     this.addPos = { x: this.ppos.x, y: this.ppos.y };
   } else if (type === 2) {
-    this.movingPos = this.end = { x: this.pos2.x, y: this.pos2.y };
-    this.goalPos = { x: this.pos1.x, y: this.pos1.y };
+    this.start = this.pos1;
+    this.movingPos = this.end = newPos2;
+    this.goalPos = newPos1;
     this.addPos = { x: -this.ppos.x, y: -this.ppos.y };
   } else if (type === 3) {
-    this.movingPos = this.start = { x: this.pos2.x, y: this.pos2.y };
-    this.goalPos = { x: this.pos1.x, y: this.pos1.y };
+    this.end = this.pos2;
+    this.movingPos = this.start = newPos2;
+    this.goalPos = newPos1;
     this.addPos = { x: -this.ppos.x, y: -this.ppos.y };
   } else {
-    this.movingPos = this.start = { x: this.pos1.x, y: this.pos1.y };
-    this.goalPos = { x: this.pos2.x, y: this.pos2.y };
+    this.end = this.pos2;
+    this.movingPos = this.start = newPos1;
+    this.goalPos = newPos2;
     this.addPos = { x: this.ppos.x, y: this.ppos.y };
   }
 };
 
-function readyForDraw(timeObj) {
+function readyForDraw(timeObj, startIndex) {
   backCtx.clearRect(0, 0, back.width, back.height);
   backCtx.lineWidth = frontCtx.lineWidth = lineWidth;
+  backCtx.fillStyle = color;
 
-  var i = 0;
+  var startX = 0;
+  var a = halfTextWid - halfNumWidth;
+  var b = halfTextWid + halfNumWidth;
+  var c = y - halfNumHeight;
+  var d = y + halfNumHeight;
+
   ch.forEach(function(text, index) {
-    var num = timeObj[keys[index]];
-    backCtx.fillStyle = '#333';
-    backCtx.fillText(text, textWid * (3 * i + 2) + halfTextWid, y);
+    if (index < startIndex) {
+      return;
+    }
 
+    var num = timeObj[keys[index]];
     var numStr = formatTime(num);
     for (var j = 0; j < numStr.length; j++) {
       var val = numStr[j];
       var map = timeMap[+val];
-      var startX = textWid * (3 * i + j);
-      var a = halfTextWid - halfNumWidth;
-      var b = halfTextWid + halfNumWidth;
-      var c = y - halfNumHeight;
-      var d = y + halfNumHeight;
+      var e = startX + a;
+      var f = startX + b;
       var coors = [
-        { x: startX + a, y: y },
-        { x: startX + a, y: c },
-        { x: startX + b, y: c },
-        { x: startX + b, y: y },
-        { x: startX + a, y: y },
-        { x: startX + a, y: d },
-        { x: startX + b, y: d },
-        { x: startX + b, y: y },
+        { x: e, y: y }, // left-mid
+        { x: e, y: c }, // left-top
+        { x: f, y: c }, // right-top
+        { x: f, y: y }, // right-mid
+        { x: e, y: y }, // left-mid
+        { x: e, y: d }, // left-bottom
+        { x: f, y: d }, // right-bottom
+        { x: f, y: y }, // right-mid
       ];
 
       var cc = (cache[text + '_' + j] = []);
-
       backCtx.beginPath();
       backCtx.moveTo(coors[0].x, coors[0].y);
 
@@ -192,46 +210,65 @@ function readyForDraw(timeObj) {
 
       backCtx.strokeStyle = '#ddd';
       backCtx.stroke();
+      startX += textWid;
     }
 
-    i++;
+    backCtx.fillText(text, startX + halfTextWid, y);
+    startX += textWid;
   });
 }
 
+var latestIndex = 0;
+var startIndex = 0;
 function drawText(timeObj) {
-  if (!ready) {
-    readyForDraw(timeObj);
+  for (let i = 0; i < keys.length; i++) {
+    if (timeObj[keys[i]]) {
+      startIndex = i;
+      break;
+    }
+  }
+
+  if (!ready || startIndex !== latestIndex) {
+    readyForDraw(timeObj, startIndex);
     ready = true;
   }
 
+  latestIndex = startIndex;
   ch.forEach(function(text, index) {
     var num = timeObj[keys[index]];
     var numStr = formatTime(num);
 
     for (var j = 0; j < numStr.length; j++) {
+      var cc = cache[text + '_' + j];
+      if (!cc) {
+        continue;
+      }
+
       var val = numStr[j];
       var map = timeMap[+val];
-      var cc = cache[text + '_' + j];
-
       for (var k = 0; k < map.length; k++) {
         var val = map[k];
         var line = cc[k];
-        if (line.value !== val) {
-          line.value = val;
-          if (val === '1') {
-            // if (map[k + 1] && map[k + 1] === '1') {
-            //   line.move(3);
-            // } else {
-            //   line.move(1);
-            // }
-            line.move(1);
+        if (line.value === val) {
+          continue;
+        }
+
+        line.value = val;
+        if (val === '1') {
+          if (cc[k + 1] && cc[k + 1].value === '1') {
+            // 1 -> 2
+            line.move(3);
           } else {
-            // if (map[k + 1] && map[k + 1] === '1') {
-            //   line.move(4);
-            // } else {
-            //   line.move(2);
-            // }
+            // 1 <- 2
+            line.move(1);
+          }
+        } else {
+          if (cc[k + 1] && cc[k + 1].value === '1') {
+            // 1 -> 2
             line.move(2);
+          } else {
+            // 1 <- 2
+            line.move(4);
           }
         }
       }
