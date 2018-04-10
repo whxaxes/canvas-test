@@ -44,7 +44,7 @@ var ch = ['年', '月', '日', '时', '分', '秒'];
 var keys = Object.keys(window.timeObj);
 var timeMap = {
   0: '1110111', // |-|_ |_|
-  1: '1000100',
+  1: '0010001',
   2: '0111110',
   3: '0111011',
   4: '1011001',
@@ -88,12 +88,7 @@ function updateTime() {
 function Line(pos1, pos2) {
   this.pos1 = pos1;
   this.pos2 = pos2;
-  this.times = 20;
   this.value = '0';
-  this.ppos = {
-    x: (pos2.x - pos1.x) / this.times,
-    y: (pos2.y - pos1.y) / this.times,
-  };
 
   this.start = pos1;
   this.end = pos1;
@@ -122,14 +117,14 @@ lp.update = function() {
 lp.updateToGoal = function() {
   if (this.movingPos.x !== this.goalPos.x) {
     this.movingPos.x += this.addPos.x;
-    if (Math.abs(this.movingPos.x - this.goalPos.x) < 0.1) {
+    if (Math.abs(this.movingPos.x - this.goalPos.x) <= 0.1) {
       this.movingPos.x = this.goalPos.x;
     }
   }
 
   if (this.movingPos.y !== this.goalPos.y) {
     this.movingPos.y += this.addPos.y;
-    if (Math.abs(this.movingPos.y - this.goalPos.y) < 0.1) {
+    if (Math.abs(this.movingPos.y - this.goalPos.y) <= 0.1) {
       this.movingPos.y = this.goalPos.y;
     }
   }
@@ -146,23 +141,24 @@ lp.move = function(type) {
     this.start = this.pos1;
     this.movingPos = this.end = newPos1;
     this.goalPos = newPos2;
-    this.addPos = { x: this.ppos.x, y: this.ppos.y };
   } else if (type === 2) {
     this.start = this.pos1;
     this.movingPos = this.end = newPos2;
     this.goalPos = newPos1;
-    this.addPos = { x: -this.ppos.x, y: -this.ppos.y };
   } else if (type === 3) {
     this.end = this.pos2;
     this.movingPos = this.start = newPos2;
     this.goalPos = newPos1;
-    this.addPos = { x: -this.ppos.x, y: -this.ppos.y };
   } else {
     this.end = this.pos2;
     this.movingPos = this.start = newPos1;
     this.goalPos = newPos2;
-    this.addPos = { x: this.ppos.x, y: this.ppos.y };
   }
+
+  this.addPos = {
+    x: (this.goalPos.x - this.movingPos.x) / 26,
+    y: (this.goalPos.y - this.movingPos.y) / 26,
+  };
 };
 
 function readyForDraw(timeObj, startIndex) {
@@ -265,10 +261,10 @@ function drawText(timeObj) {
         } else {
           if (cc[k + 1] && cc[k + 1].value === '1') {
             // 1 -> 2
-            line.move(2);
+            line.move(4);
           } else {
             // 1 <- 2
-            line.move(4);
+            line.move(2);
           }
         }
       }
