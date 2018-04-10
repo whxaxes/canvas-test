@@ -23,11 +23,11 @@ frontCtx.strokeStyle = color;
 frontCtx.lineCap = 'round';
 frontCtx.lineJoin = 'round';
 
-var textWid = 18 * ratio;
-var fontSize = 14 * ratio;
-var numWidth = 10 * ratio;
-var numHeight = 15 * ratio;
-var lineWidth = 2 * ratio;
+var textWid = 36 * ratio;
+var fontSize = 28 * ratio;
+var numWidth = 20 * ratio;
+var numHeight = 30 * ratio;
+var lineWidth = 4 * ratio;
 var halfTextWid = textWid / 2;
 var halfFontSize = fontSize / 2;
 var halfNumWidth = numWidth / 2;
@@ -208,7 +208,7 @@ function readyForDraw(timeObj, startIndex) {
         cc.push(new Line(coors[k - 1], coors[k]));
       }
 
-      backCtx.strokeStyle = '#ddd';
+      backCtx.strokeStyle = '#eee';
       backCtx.stroke();
       startX += textWid;
     }
@@ -276,6 +276,7 @@ function drawText(timeObj) {
   });
 }
 
+var time = 0;
 function animate() {
   frontCtx.clearRect(0, 0, front.width, front.height);
 
@@ -286,6 +287,12 @@ function animate() {
     });
   });
   frontCtx.stroke();
+
+  var newTime = Date.now();
+  if (newTime - time >= 1000) {
+    updateTime();
+    time = newTime;
+  }
 
   RAF(animate);
 }
@@ -303,7 +310,5 @@ window.RAF = (function() {
   );
 })();
 
-// update time
-updateTime();
-setInterval(updateTime, 1000);
+// start animate
 animate();
