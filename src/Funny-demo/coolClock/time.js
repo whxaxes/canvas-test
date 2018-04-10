@@ -259,12 +259,12 @@ function drawText(timeObj) {
             line.move(1);
           }
         } else {
-          if (cc[k + 1] && cc[k + 1].value === '1') {
+          if (cc[k - 1] && cc[k - 1].value === '1') {
             // 1 -> 2
-            line.move(4);
+            line.move(2);
           } else {
             // 1 <- 2
-            line.move(2);
+            line.move(4);
           }
         }
       }
