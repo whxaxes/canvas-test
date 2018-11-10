@@ -1,16 +1,25 @@
-window.timeObj = {
-  year: 29993,
-  month: 12,
-  day: 30,
-  hour: 23,
-  minute: 59,
-  second: 55,
-};
+var renderer = initTime(28, 20, 30, 4);
+updateTime();
 
-initTime(36, 28, 20, 30, 4);
+function updateTime() {
+  var date = new Date();
+  renderer.render(
+    '北京时间 {{ year }} 年 {{ month }} 月 {{ day }} 日 {{ hour }}:{{ minute }}:{{ second }} ~~',
+    {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+      second: date.getSeconds(),
+    }
+  );
+
+  setTimeout(updateTime, 1000);
+}
 
 // time handle
-function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
+function initTime(fontSize, numWidth, numHeight, lineWidth) {
   var time = document.getElementById('time');
   var front = document.createElement('canvas');
   var frontCtx = front.getContext('2d');
@@ -26,25 +35,22 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
   frontCtx.lineCap = 'round';
   frontCtx.lineJoin = 'round';
 
-  textWid *= ratio;
   fontSize *= ratio;
   numWidth *= ratio;
   numHeight *= ratio;
   lineWidth *= ratio;
-  var halfTextWid = textWid / 2;
   var halfFontSize = fontSize / 2;
   var halfNumWidth = numWidth / 2;
   var halfNumHeight = numHeight / 2;
-  var y = back.height / 2;
+  var middleLinePosY = back.height / 2;
   backCtx.textAlign = 'center';
   backCtx.textBaseline = 'middle';
   backCtx.font = fontSize + 'px sans-serif, "黑体"';
 
+  var currentTemp;
+  var parseResult;
   var ready = false;
-  var cache = {};
-
-  var ch = ['年', '月', '日', '时', '分', '秒'];
-  var keys = Object.keys(window.timeObj);
+  var lineStore = {};
   var timeMap = {
     0: '1110111', // |-|_ |_|
     1: '0010001',
@@ -58,34 +64,34 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
     9: '1111011',
   };
 
+  // parse template
+  function parseTemplate(template) {
+    var fields = [];
+    var renderList = [];
+
+    while (template) {
+      var match = template.match(/{{\s*(\w+)\s*}}/);
+      var text = template.substring(0, (match || {}).index || template.length);
+      var cnLen = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+      var fontWidth = cnLen * fontSize + (text.length - cnLen) * halfFontSize;
+      renderList.push({ text: text, width: fontWidth });
+
+      if (!match) {
+        break;
+      }
+  
+      var field = match[1];
+      renderList.push({ field });
+      fields.push(field);
+      template = template.substring(match.index + match[0].length);
+    }
+    return { fields: fields, renderList: renderList };
+  }
+
+  // format time
   function formatTime(n) {
     n = String(n);
     return n.length === 1 ? '0' + n : n;
-  }
-
-  // auto increment time
-  function updateTime() {
-    var date = new Date();
-    var latestDay = new Date(
-      date.getFullYear(),
-      date.getMonth() + 1,
-      0
-    ).getDate();
-
-    // calculate time
-    var up = [0, 12, latestDay, 24, 60, 60];
-    while (up.length) {
-      var index = up.length - 1;
-      var upper = up.pop();
-      var key = keys[index];
-      if (++window.timeObj[key] >= upper && upper) {
-        window.timeObj[key] = index >= 3 ? 0 : 1;
-      } else {
-        break;
-      }
-    }
-
-    drawText(window.timeObj);
   }
 
   function Line(pos1, pos2, frontLine) {
@@ -181,83 +187,72 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
     };
   };
 
-  function readyForDraw(timeObj, startIndex) {
+  function drawBackground(timeObj) {
+    lineStore = {};
     backCtx.clearRect(0, 0, back.width, back.height);
     backCtx.lineWidth = frontCtx.lineWidth = lineWidth;
     backCtx.fillStyle = color;
 
     var startX = 0;
-    var a = halfTextWid - halfNumWidth;
-    var b = halfTextWid + halfNumWidth;
+    var y = middleLinePosY;
+    var distance = 4;
+    var a = distance;
+    var b = a + numWidth;
     var c = y - halfNumHeight;
     var d = y + halfNumHeight;
 
-    ch.forEach(function(text, index) {
-      if (index < startIndex) {
-        return;
-      }
-
-      var num = timeObj[keys[index]];
-      var numStr = formatTime(num);
-      for (var j = 0; j < numStr.length; j++) {
-        var val = numStr[j];
-        var map = timeMap[+val];
-        var e = startX + a;
-        var f = startX + b;
-        var coors = [
-          { x: e, y: y }, // left-mid
-          { x: e, y: c }, // left-top
-          { x: f, y: c }, // right-top
-          { x: f, y: y }, // right-mid
-          { x: e, y: y }, // left-mid
-          { x: e, y: d }, // left-bottom
-          { x: f, y: d }, // right-bottom
-          { x: f, y: y }, // right-mid
-        ];
-
-        var cc = (cache[text + '_' + j] = []);
-        backCtx.beginPath();
-        backCtx.moveTo(coors[0].x, coors[0].y);
-
-        for (var k = 1; k < coors.length; k++) {
-          backCtx.lineTo(coors[k].x, coors[k].y);
-          cc.push(new Line(coors[k - 1], coors[k], cc[cc.length - 1]));
+    // foreach and draw
+    parseResult.renderList.forEach(function(item) {
+      if (item.text) {
+        // draw font
+        var textLen = item.text.length;
+        backCtx.fillText(item.text, startX + item.width / 2, y);
+        startX += item.width;
+      } else if(item.field) {
+        // draw date number
+        var num = timeObj[item.field];
+        var numStr = formatTime(num);
+        for (var j = 0; j < numStr.length; j++) {
+          var val = numStr[j];
+          var map = timeMap[+val];
+          var e = startX + a;
+          var f = startX + b;
+          var coors = [
+            { x: e, y: y }, // left-mid
+            { x: e, y: c }, // left-top
+            { x: f, y: c }, // right-top
+            { x: f, y: y }, // right-mid
+            { x: e, y: y }, // left-mid
+            { x: e, y: d }, // left-bottom
+            { x: f, y: d }, // right-bottom
+            { x: f, y: y }, // right-mid
+          ];
+  
+          var lineList = (lineStore[item.field + '_' + j] = []);
+          backCtx.beginPath();
+          backCtx.moveTo(coors[0].x, coors[0].y);
+          for (var k = 1; k < coors.length; k++) {
+            backCtx.lineTo(coors[k].x, coors[k].y);
+            var line = new Line(coors[k - 1], coors[k], lineList[lineList.length - 1]);
+            lineList.push(line);
+          }
+          backCtx.strokeStyle = '#eee';
+          backCtx.stroke();
+          startX += numWidth + distance * 2;
         }
-
-        backCtx.strokeStyle = '#eee';
-        backCtx.stroke();
-        startX += textWid;
       }
-
-      backCtx.fillText(text, startX + halfTextWid, y);
-      startX += textWid;
     });
   }
 
-  var latestIndex = 0;
-  var startIndex = 0;
-  function drawText(timeObj) {
-    for (var i = 0; i < keys.length; i++) {
-      if (timeObj[keys[i]]) {
-        startIndex = i;
-        break;
-      }
-    }
-
-    if (!ready || startIndex !== latestIndex) {
-      readyForDraw(timeObj, startIndex);
-      ready = true;
-    }
-
-    var waiter;
-    latestIndex = startIndex;
-    ch.forEach(function(text, index) {
-      var num = timeObj[keys[index]];
+  function updateTimeTransform(timeObj) {
+    // calculate moving direction of line
+    parseResult.fields.forEach(function(field) {
+      var num = timeObj[field];
       var numStr = formatTime(num);
 
       for (var j = 0; j < numStr.length; j++) {
-        var cc = cache[text + '_' + j];
-        if (!cc) {
+        var lines = lineStore[field + '_' + j];
+        if (!lines) {
           continue;
         }
 
@@ -265,14 +260,14 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
         var map = timeMap[+val];
         for (var k = 0; k < map.length; k++) {
           var val = map[k];
-          var line = cc[k];
+          var line = lines[k];
           if (line.value === val) {
             continue;
           }
 
           line.value = val;
           if (val === '1') {
-            if (cc[k + 1] && cc[k + 1].value === '1') {
+            if (lines[k + 1] && lines[k + 1].value === '1') {
               // 1 -> 2
               line.move(3);
             } else {
@@ -280,7 +275,7 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
               line.move(1);
             }
           } else {
-            if (cc[k - 1] && cc[k - 1].value === '1') {
+            if (lines[k - 1] && lines[k - 1].value === '1') {
               // 1 -> 2
               line.move(2);
             } else {
@@ -296,21 +291,15 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
   var time = 0;
   function animate() {
     frontCtx.clearRect(0, 0, front.width, front.height);
-
     frontCtx.beginPath();
-    Object.keys(cache).forEach(function(key) {
-      cache[key].forEach(function(line) {
+
+    Object.keys(lineStore).forEach(function(key) {
+      lineStore[key].forEach(function(line) {
         line.update();
       });
     });
+
     frontCtx.stroke();
-
-    var newTime = Date.now();
-    if (newTime - time >= 1000) {
-      updateTime();
-      time = newTime;
-    }
-
     RAF(animate);
   }
 
@@ -329,4 +318,23 @@ function initTime(textWid, fontSize, numWidth, numHeight, lineWidth) {
 
   // start animate
   animate();
+
+  return {
+    render(template, timeObj) {
+      if (currentTemp !== template) {
+        parseResult = parseTemplate(template);
+        drawBackground(timeObj);
+      }
+
+      if (!currentTemp) {
+        setTimeout(function() {
+          updateTimeTransform(timeObj);
+        }, 100);
+      } else {
+        updateTimeTransform(timeObj);
+      }
+
+      currentTemp = template;
+    }
+  }
 }
