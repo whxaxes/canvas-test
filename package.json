@@ -11,3 +11,8 @@
   "author": "wanghx",
   "license": "MIT"
 }
+{
+  "scripts": {
+    "build": "[my-framework] build --output public"
+  }
+}
